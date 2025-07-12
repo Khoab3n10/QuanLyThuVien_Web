@@ -1,0 +1,60 @@
+.borrow-management {
+  padding-left: 280px;
+}
+
+.borrow-reader,
+.borrow-book {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.borrow-reader strong,
+.borrow-book strong {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.borrow-reader small,
+.borrow-book small {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.borrow-notes {
+  max-width: 200px;
+  font-size: 0.875rem;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overdue-row {
+  background-color: #fef2f2 !important;
+}
+
+.overdue-row:hover {
+  background-color: #fee2e2 !important;
+}
+
+.overdue-date {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .borrow-management {
+    padding-left: 0;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .search-bar {
+    max-width: 100%;
+  }
+} 
