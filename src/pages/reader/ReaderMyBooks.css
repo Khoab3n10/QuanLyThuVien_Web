@@ -1,0 +1,175 @@
+.reader-my-books {
+  padding-left: 280px;
+}
+
+.books-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.book-item {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #3b82f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.book-item.overdue {
+  border-left-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.book-info {
+  flex: 1;
+}
+
+.book-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.book-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.book-details {
+  margin-bottom: 1rem;
+}
+
+.book-details p {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.book-details strong {
+  color: #374151;
+}
+
+.book-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.date-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.date-item svg {
+  color: #3b82f6;
+  width: 14px;
+}
+
+.date-item.overdue-text {
+  color: #ef4444;
+}
+
+.date-item.overdue-text svg {
+  color: #ef4444;
+}
+
+.book-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 200px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.overdue-warning {
+  text-align: center;
+  padding: 1rem;
+  background-color: #fef2f2;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+}
+
+.overdue-warning p {
+  color: #dc2626;
+  font-weight: 500;
+  margin: 0 0 1rem 0;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #3b82f6;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .reader-my-books {
+    padding-left: 0;
+  }
+  
+  .book-item {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .book-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .book-title {
+    margin-right: 0;
+  }
+  
+  .book-actions {
+    min-width: auto;
+  }
+  
+  .action-buttons {
+    flex-direction: row;
+  }
+  
+  .summary-stats {
+    grid-template-columns: 1fr;
+  }
+} 
