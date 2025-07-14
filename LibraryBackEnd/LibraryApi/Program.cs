@@ -12,9 +12,9 @@ builder.Services.AddDbContext<LibraryContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp",
+    options.AddPolicy("AllowAll",
         policy => policy
-            .WithOrigins("https://quan-ly-thu-vien-web-git-master-sightfads-projects.vercel.app")
+            .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
