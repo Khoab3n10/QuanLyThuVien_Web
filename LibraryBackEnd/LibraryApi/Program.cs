@@ -12,17 +12,15 @@ builder.Services.AddDbContext<LibraryContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+    options.AddPolicy("AllowReactApp",
+        policy => policy.WithOrigins("https://quan-ly-thu-vien-web.vercel.app/")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
 });
 
 var app = builder.Build();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowReactApp");
 
 using (var scope = app.Services.CreateScope())
 {

@@ -11,7 +11,7 @@ const BookManagement = () => {
   const [editingBook, setEditingBook] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const apiUrl = 'http://localhost:5280/api/Sach';
+  const apiUrl = 'dbskidibi.database.windows.net/api/Sach';
 
   // Tải dữ liệu sách từ API
   useEffect(() => {
