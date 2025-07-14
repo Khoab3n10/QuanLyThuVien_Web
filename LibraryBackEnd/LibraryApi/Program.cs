@@ -14,7 +14,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         policy => policy
-            .WithOrigins("https://quan-ly-thu-vien-web.vercel.app")
+            .WithOrigins("https://quan-ly-thu-vien-web-git-master-sightfads-projects.vercel.app")
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
