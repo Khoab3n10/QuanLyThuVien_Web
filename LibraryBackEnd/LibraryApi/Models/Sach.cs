@@ -12,6 +12,5 @@
         public int SoLuong { get; set; }                // Tổng số lượng
         public int SoLuongCoSan { get; set; }           // Số lượng có sẵn
         public string ViTriLuuTru { get; set; }         // Vị trí lưu trữ
-        public string TrangThai { get; set; }           // Trạng thái
     }
 }
