@@ -8,5 +8,7 @@ namespace LibraryApi.Data
         public LibraryContext(DbContextOptions<LibraryContext> options) : base(options) { }
 
         public DbSet<Sach> Saches { get; set; }
+        public DbSet<DocGia> DocGias { get; set; }
+        public DbSet<PhieuMuon> PhieuMuons { get; set; }
     }
 }

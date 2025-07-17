@@ -21,7 +21,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseCors("AllowReactApp");
+app.UseCors("AllowAll");
 
 using (var scope = app.Services.CreateScope())
 {

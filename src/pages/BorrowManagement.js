@@ -1,92 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
-import BorrowModal from '../components/BorrowModal';
-import './BorrowManagement.css';
+import React, { useState, useEffect } from "react";
+import {
+  FaPlus,
+  FaSearch,
+  FaEdit,
+  FaTrash,
+  FaCheck,
+  FaTimes,
+} from "react-icons/fa";
+import BorrowModal from "../components/BorrowModal";
+import "./BorrowManagement.css";
 
 const BorrowManagement = () => {
   const [borrows, setBorrows] = useState([]);
   const [filteredBorrows, setFilteredBorrows] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingBorrow, setEditingBorrow] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const apiUrl =
+    "https://libraryapi20250714182231-dvf7buahgwdmcmg7.southeastasia-01.azurewebsites.net/api/PhieuMuon";
   useEffect(() => {
-    // Simulate loading data
-    setTimeout(() => {
-      const mockBorrows = [
-        {
-          id: 1,
-          readerId: 1,
-          readerName: 'Nguyễn Văn A',
-          bookId: 1,
-          bookTitle: 'Đắc Nhân Tâm',
-          borrowDate: '2024-01-15',
-          returnDate: '2024-02-15',
-          actualReturnDate: null,
-          status: 'borrowed',
-          notes: 'Sách mượn cho nghiên cứu'
-        },
-        {
-          id: 2,
-          readerId: 2,
-          readerName: 'Trần Thị B',
-          bookId: 2,
-          bookTitle: 'Nhà Giả Kim',
-          borrowDate: '2024-01-14',
-          returnDate: '2024-02-14',
-          actualReturnDate: '2024-01-25',
-          status: 'returned',
-          notes: 'Đã trả đúng hạn'
-        },
-        {
-          id: 3,
-          readerId: 3,
-          readerName: 'Lê Văn C',
-          bookId: 3,
-          bookTitle: 'Tuổi Trẻ Đáng Giá Bao Nhiêu',
-          borrowDate: '2024-01-13',
-          returnDate: '2024-02-13',
-          actualReturnDate: null,
-          status: 'overdue',
-          notes: 'Quá hạn trả sách'
-        },
-        {
-          id: 4,
-          readerId: 4,
-          readerName: 'Phạm Thị D',
-          bookId: 4,
-          bookTitle: 'Cách Nghĩ Để Thành Công',
-          borrowDate: '2024-01-20',
-          returnDate: '2024-02-20',
-          actualReturnDate: null,
-          status: 'borrowed',
-          notes: 'Sách mượn cho học tập'
-        },
-        {
-          id: 5,
-          readerId: 5,
-          readerName: 'Hoàng Văn E',
-          bookId: 5,
-          bookTitle: 'Đọc Vị Bất Kỳ Ai',
-          borrowDate: '2024-01-18',
-          returnDate: '2024-02-18',
-          actualReturnDate: '2024-01-30',
-          status: 'returned',
-          notes: 'Trả sớm'
-        }
-      ];
-      setBorrows(mockBorrows);
-      setFilteredBorrows(mockBorrows);
-      setLoading(false);
-    }, 1000);
+    fetch(apiUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        const mappedBorrows = data.map((borrow) => ({
+          id: borrow.id,
+          readerId: borrow.idDocGia,
+          readerName: borrow.docGia.tenDocGia,
+          bookId: borrow.idSach,
+          bookTitle: borrow.sach.tenSach,
+          borrowDate: new Date(borrow.ngayMuon).toISOString().split("T")[0],
+          returnDate: new Date(borrow.hanTra).toISOString().split("T")[0],
+          actualReturnDate: borrow.ngayTra
+            ? new Date(borrow.ngayTra).toISOString().split("T")[0]
+            : null,
+          status: borrow.trangThai,
+          notes: borrow.ghiChu || "",
+        }));
+        setBorrows(mappedBorrows);
+        setFilteredBorrows(mappedBorrows);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi tải phiếu mượn:", err);
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
-    const filtered = borrows.filter(borrow =>
-      borrow.readerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      borrow.bookTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      borrow.status.includes(searchTerm.toLowerCase())
+    const filtered = borrows.filter(
+      (borrow) =>
+        borrow.readerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        borrow.bookTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        borrow.status.includes(searchTerm.toLowerCase())
     );
     setFilteredBorrows(filtered);
   }, [searchTerm, borrows]);
@@ -102,18 +69,27 @@ const BorrowManagement = () => {
   };
 
   const handleDeleteBorrow = (borrowId) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa phiếu mượn này?')) {
-      setBorrows(borrows.filter(borrow => borrow.id !== borrowId));
+    if (window.confirm("Bạn có chắc chắn muốn xóa phiếu mượn này?")) {
+      fetch(`${apiUrl}/${borrowId}`, {
+        method: "DELETE",
+      })
+        .then(() => {
+          setBorrows(borrows.filter((borrow) => borrow.id !== borrowId));
+          setFilteredBorrows(
+            filteredBorrows.filter((borrow) => borrow.id !== borrowId)
+          );
+        })
+        .catch((err) => console.error("Lỗi khi xóa phiếu mượn:", err));
     }
   };
 
   const handleReturnBook = (borrowId) => {
-    const updatedBorrows = borrows.map(borrow => {
+    const updatedBorrows = borrows.map((borrow) => {
       if (borrow.id === borrowId) {
         return {
           ...borrow,
-          status: 'returned',
-          actualReturnDate: new Date().toISOString().split('T')[0]
+          status: "returned",
+          actualReturnDate: new Date().toISOString().split("T")[0],
         };
       }
       return borrow;
@@ -122,20 +98,86 @@ const BorrowManagement = () => {
   };
 
   const handleSaveBorrow = (borrowData) => {
-    if (editingBorrow) {
-      // Update existing borrow
-      setBorrows(borrows.map(borrow => 
-        borrow.id === editingBorrow.id ? { ...borrowData, id: editingBorrow.id } : borrow
-      ));
+    if (
+      !borrowData.readerId ||
+      !borrowData.bookId ||
+      !borrowData.borrowDate ||
+      !borrowData.returnDate
+    ) {
+      alert("Vui lòng điền đầy đủ thông tin phiếu mượn.");
+      return;
+    }
+
+    // Kiểm tra xem ngày trả có hợp lệ không
+    if (new Date(borrowData.returnDate) < new Date(borrowData.borrowDate)) {
+      alert("Ngày trả không thể trước ngày mượn.");
+      return;
+    }
+
+    // Kiểm tra xem phiếu mượn đã tồn tại chưa
+    if (editingBorrow && editingBorrow.id) {
+      // Cập nhật phiếu mượn hiện tại
+      fetch(`${apiUrl}/${editingBorrow.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idDocGia: borrowData.readerId,
+          idSach: borrowData.bookId,
+          ngayMuon: borrowData.borrowDate,
+          hanTra: borrowData.returnDate,
+          ngayTra: borrowData.actualReturnDate || null,
+          trangThai: borrowData.status,
+          ghiChu: borrowData.notes || "",
+        }),
+      })
+        .then((res) => res.json())
+        .then(() => {
+          const updatedBorrows = borrows.map((borrow) =>
+            borrow.id === editingBorrow.id
+              ? { ...borrowData, id: editingBorrow.id }
+              : borrow
+          );
+          setBorrows(updatedBorrows);
+          setFilteredBorrows(updatedBorrows);
+        })
+        .catch((err) => console.error("Lỗi khi cập nhật phiếu mượn:", err));
     } else {
-      // Add new borrow
-      const newBorrow = {
-        ...borrowData,
-        id: Math.max(...borrows.map(b => b.id)) + 1,
-        status: 'borrowed',
-        actualReturnDate: null
-      };
-      setBorrows([...borrows, newBorrow]);
+      // Thêm phiếu mượn mới
+      fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idDocGia: borrowData.readerId,
+          idSach: borrowData.bookId,
+          ngayMuon: borrowData.borrowDate,
+          hanTra: borrowData.returnDate,
+          ngayTra: borrowData.actualReturnDate || null,
+          trangThai: "borrowed",
+          ghiChu: borrowData.notes || "",
+        }),
+      })
+        .then((res) => res.json())
+        .then((newBorrow) => {
+          const newBorrowData = {
+            id: newBorrow.id,
+            readerId: newBorrow.idDocGia,
+            readerName: newBorrow.docGia.tenDocGia,
+            bookId: newBorrow.idSach,
+            bookTitle: newBorrow.sach.tenSach,
+            borrowDate: new Date(newBorrow.ngayMuon)
+              .toISOString()
+              .split("T")[0],
+            returnDate: new Date(newBorrow.hanTra).toISOString().split("T")[0],
+            actualReturnDate: newBorrow.ngayTra
+              ? new Date(newBorrow.ngayTra).toISOString().split("T")[0]
+              : null,
+            status: newBorrow.trangThai,
+            notes: newBorrow.ghiChu || "",
+          };
+          setBorrows([...borrows, newBorrowData]);
+          setFilteredBorrows([...filteredBorrows, newBorrowData]);
+        })
+        .catch((err) => console.error("Lỗi khi thêm phiếu mượn:", err));
     }
     setShowModal(false);
     setEditingBorrow(null);
@@ -143,11 +185,11 @@ const BorrowManagement = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'borrowed':
+      case "borrowed":
         return <span className="badge badge-info">Đang mượn</span>;
-      case 'returned':
+      case "returned":
         return <span className="badge badge-success">Đã trả</span>;
-      case 'overdue':
+      case "overdue":
         return <span className="badge badge-danger">Quá hạn</span>;
       default:
         return <span className="badge badge-secondary">Không xác định</span>;
@@ -170,7 +212,9 @@ const BorrowManagement = () => {
     <div className="borrow-management">
       <div className="page-header">
         <h1 className="page-title">Quản lý mượn trả</h1>
-        <p className="page-subtitle">Quản lý phiếu mượn trả sách trong thư viện</p>
+        <p className="page-subtitle">
+          Quản lý phiếu mượn trả sách trong thư viện
+        </p>
       </div>
 
       <div className="content-section">
@@ -207,8 +251,15 @@ const BorrowManagement = () => {
             </thead>
             <tbody>
               {filteredBorrows.map((borrow) => (
-                <tr key={borrow.id} className={isOverdue(borrow.returnDate) && borrow.status === 'borrowed' ? 'overdue-row' : ''}>
-                  <td>#{borrow.id.toString().padStart(4, '0')}</td>
+                <tr
+                  key={borrow.id}
+                  className={
+                    isOverdue(borrow.returnDate) && borrow.status === "borrowed"
+                      ? "overdue-row"
+                      : ""
+                  }
+                >
+                  <td>#{borrow.id.toString().padStart(4, "0")}</td>
                   <td>
                     <div className="borrow-reader">
                       <strong>{borrow.readerName}</strong>
@@ -222,19 +273,26 @@ const BorrowManagement = () => {
                     </div>
                   </td>
                   <td>{borrow.borrowDate}</td>
-                  <td className={isOverdue(borrow.returnDate) && borrow.status === 'borrowed' ? 'overdue-date' : ''}>
+                  <td
+                    className={
+                      isOverdue(borrow.returnDate) &&
+                      borrow.status === "borrowed"
+                        ? "overdue-date"
+                        : ""
+                    }
+                  >
                     {borrow.returnDate}
                   </td>
-                  <td>{borrow.actualReturnDate || '-'}</td>
+                  <td>{borrow.actualReturnDate || "-"}</td>
                   <td>{getStatusBadge(borrow.status)}</td>
                   <td>
                     <div className="borrow-notes">
-                      {borrow.notes || 'Không có ghi chú'}
+                      {borrow.notes || "Không có ghi chú"}
                     </div>
                   </td>
                   <td>
                     <div className="action-buttons">
-                      {borrow.status === 'borrowed' && (
+                      {borrow.status === "borrowed" && (
                         <button
                           className="btn btn-success btn-sm"
                           onClick={() => handleReturnBook(borrow.id)}
@@ -287,4 +345,4 @@ const BorrowManagement = () => {
   );
 };
 
-export default BorrowManagement; 
+export default BorrowManagement;

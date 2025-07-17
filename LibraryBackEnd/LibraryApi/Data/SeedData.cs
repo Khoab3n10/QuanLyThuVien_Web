@@ -7,7 +7,7 @@ namespace LibraryApi.Data
     {
         public static void Initialize(LibraryContext context)
         {
-            if (context.Saches.Any()) return;
+            if (context.Saches.Any() || context.DocGias.Any() || context.PhieuMuons.Any()) return;
 
             context.Saches.AddRange(
                 new Sach
@@ -45,6 +45,85 @@ namespace LibraryApi.Data
                     SoLuong = 4,
                     SoLuongCoSan = 2,
                     ViTriLuuTru = "Kệ A3"
+                }
+            );
+
+            context.DocGias.AddRange(
+                new DocGia { 
+                    HoTen = "Nguyễn Văn A", 
+                    Email = "nguyenvana@email.com", 
+                    SoDienThoai = "0123456789", 
+                    DiaChi = "123 Lê Lợi, Q1", 
+                    NgayDangKy = DateTime.Now.AddDays(-30), 
+                    TrangThai = "Hoạt động", 
+                    TongLuotMuon = 15, 
+                    SachDangMuon = 2 
+                },
+                new DocGia 
+                {
+                    HoTen = "Trần Thị B",
+                    Email = "tranthib@email.com",
+                    SoDienThoai = "0987654321", 
+                    DiaChi = "456 Nguyễn Trãi, Q5", 
+                    NgayDangKy = DateTime.Now.AddDays(-10),
+                    TrangThai = "Hoạt động", TongLuotMuon = 8, 
+                    SachDangMuon = 0 
+                },
+                new DocGia
+                {
+                    HoTen = "Lê Văn C",
+                    Email = "levanc@email.com",
+                    SoDienThoai = "0987654321",
+                    DiaChi = "456 Nguyễn Trãi, Q5",
+                    NgayDangKy = DateTime.Now.AddDays(-10),
+                    TrangThai = "Không hoạt động",
+                    TongLuotMuon = 3,
+                    SachDangMuon = 1
+                },
+                new DocGia
+                {
+                    HoTen = "Phạm Thị D",
+                    Email = "phamthid@email.com",
+                    SoDienThoai = "0987654321",
+                    DiaChi = "456 Nguyễn Trãi, Q5",
+                    NgayDangKy = DateTime.Now.AddDays(-10),
+                    TrangThai = "Hoạt động",
+                    TongLuotMuon = 22,
+                    SachDangMuon = 3
+                },
+                new DocGia
+                {
+                    HoTen = "Hoàng Văn E",
+                    Email = "hoangvane@email.com",
+                    SoDienThoai = "0444555666",
+                    DiaChi = "456 Nguyễn Trãi, Q5",
+                    NgayDangKy = DateTime.Now.AddDays(-10),
+                    TrangThai = "Hoạt động",
+                    TongLuotMuon = 5,
+                    SachDangMuon = 0
+                }
+            );
+
+            context.PhieuMuons.AddRange(
+                new PhieuMuon
+                {
+                    TenDocGia = "Nguyễn Văn A",
+                    TenSach = "Đắc Nhân Tâm",
+                    NgayMuon = DateTime.Now.AddDays(-7),
+                    HanTra = DateTime.Now.AddDays(7),
+                    NgayTraThuc = null,
+                    TrangThai = "Đang mượn",
+                    GhiChu = "Mượn lần đầu"
+                },
+                new PhieuMuon
+                {
+                    TenDocGia = "Trần Thị B",
+                    TenSach = "Nhà Giả Kim",
+                    NgayMuon = DateTime.Now.AddDays(-15),
+                    HanTra = DateTime.Now.AddDays(-5),
+                    NgayTraThuc = DateTime.Now.AddDays(-3),
+                    TrangThai = "Đã trả",
+                    GhiChu = "Trả đúng hạn"
                 }
             );
 
