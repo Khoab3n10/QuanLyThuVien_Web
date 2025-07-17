@@ -20,34 +20,28 @@ const BorrowManagement = () => {
 
   const apiUrl =
     "https://libraryapi20250714182231-dvf7buahgwdmcmg7.southeastasia-01.azurewebsites.net/api/PhieuMuon";
+
+  const mapBorrowData = (borrow) => ({
+    id: borrow.id,
+    readerId: borrow.idDocGia,
+    readerName: borrow.docGia?.tenDocGia || borrow.tenDocGia || "",
+    bookId: borrow.idSach,
+    bookTitle: borrow.sach?.tenSach || borrow.tenSach || "",
+    borrowDate: new Date(borrow.ngayMuon).toISOString().split("T")[0],
+    returnDate: new Date(borrow.hanTra).toISOString().split("T")[0],
+    actualReturnDate: borrow.ngayTra
+      ? new Date(borrow.ngayTra).toISOString().split("T")[0]
+      : null,
+    status: borrow.trangThai,
+    notes: borrow.ghiChu || "",
+  });
+
+  // Tải dữ liệu phiếu mượn từ API
   useEffect(() => {
-    fetch(apiUrl)
-      .then((res) => res.json())
-      .then((data) => {
-        const mappedBorrows = data.map((borrow) => ({
-          id: borrow.id,
-          readerId: borrow.idDocGia,
-          readerName: borrow.tenDocGia,
-          bookId: borrow.idSach,
-          bookTitle: borrow.tenSach,
-          borrowDate: new Date(borrow.ngayMuon).toISOString().split("T")[0],
-          returnDate: new Date(borrow.hanTra).toISOString().split("T")[0],
-          actualReturnDate: borrow.ngayTra
-            ? new Date(borrow.ngayTra).toISOString().split("T")[0]
-            : null,
-          status: borrow.trangThai,
-          notes: borrow.ghiChu || "",
-        }));
-        setBorrows(mappedBorrows);
-        setFilteredBorrows(mappedBorrows);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Lỗi khi tải phiếu mượn:", err);
-        setLoading(false);
-      });
+    refreshBorrows();
   }, []);
 
+  // Lọc phiếu mượn khi tìm kiếm
   useEffect(() => {
     const filtered = borrows.filter(
       (borrow) =>
@@ -68,35 +62,35 @@ const BorrowManagement = () => {
     setShowModal(true);
   };
 
-  const handleDeleteBorrow = (borrowId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa phiếu mượn này?")) {
-      fetch(`${apiUrl}/${borrowId}`, {
-        method: "DELETE",
-      })
-        .then(() => {
-          setBorrows(borrows.filter((borrow) => borrow.id !== borrowId));
-          setFilteredBorrows(
-            filteredBorrows.filter((borrow) => borrow.id !== borrowId)
-          );
-        })
-        .catch((err) => console.error("Lỗi khi xóa phiếu mượn:", err));
-    }
-  };
-
+  // Trả sách
   const handleReturnBook = (borrowId) => {
-    const updatedBorrows = borrows.map((borrow) => {
-      if (borrow.id === borrowId) {
-        return {
-          ...borrow,
-          status: "returned",
-          actualReturnDate: new Date().toISOString().split("T")[0],
-        };
-      }
-      return borrow;
-    });
-    setBorrows(updatedBorrows);
+    // Tìm borrow hiện tại
+    const borrow = borrows.find((b) => b.id === borrowId);
+    if (!borrow) return;
+
+    // Gửi yêu cầu cập nhật trạng thái lên API
+    fetch(`${apiUrl}/${borrowId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: borrowId,
+        idDocGia: borrow.readerId,
+        idSach: borrow.bookId,
+        ngayMuon: borrow.borrowDate,
+        hanTra: borrow.returnDate,
+        ngayTra: new Date().toISOString().split("T")[0],
+        trangThai: "returned",
+        ghiChu: borrow.notes || "",
+      }),
+    })
+      .then((res) => res.json())
+      .then(() => {
+        refreshBorrows();
+      })
+      .catch((err) => console.error("Lỗi khi trả sách:", err));
   };
 
+  // Lưu phiếu mượn
   const handleSaveBorrow = (borrowData) => {
     if (
       !borrowData.readerId ||
@@ -108,37 +102,35 @@ const BorrowManagement = () => {
       return;
     }
 
-    // Kiểm tra xem ngày trả có hợp lệ không
     if (new Date(borrowData.returnDate) < new Date(borrowData.borrowDate)) {
       alert("Ngày trả không thể trước ngày mượn.");
       return;
     }
 
-    // Kiểm tra xem phiếu mượn đã tồn tại chưa
+    const requestData = {
+      IdDocGia: borrowData.readerId,
+      TenDocGia: borrowData.readerName, // Thêm dòng này
+      IdSach: borrowData.bookId,
+      TenSach: borrowData.bookTitle, // Thêm dòng này
+      NgayMuon: borrowData.borrowDate,
+      HanTra: borrowData.returnDate,
+      NgayTra: borrowData.actualReturnDate || null,
+      TrangThai: borrowData.status || "borrowed",
+      GhiChu: borrowData.notes || "",
+    };
+
     if (editingBorrow && editingBorrow.id) {
       // Cập nhật phiếu mượn hiện tại
       fetch(`${apiUrl}/${editingBorrow.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idDocGia: borrowData.readerId,
-          idSach: borrowData.bookId,
-          ngayMuon: borrowData.borrowDate,
-          hanTra: borrowData.returnDate,
-          ngayTra: borrowData.actualReturnDate || null,
-          trangThai: borrowData.status,
-          ghiChu: borrowData.notes || "",
-        }),
+        body: JSON.stringify({ ...requestData, id: editingBorrow.id }),
       })
         .then((res) => res.json())
         .then(() => {
-          const updatedBorrows = borrows.map((borrow) =>
-            borrow.id === editingBorrow.id
-              ? { ...borrowData, id: editingBorrow.id }
-              : borrow
-          );
-          setBorrows(updatedBorrows);
-          setFilteredBorrows(updatedBorrows);
+          setShowModal(false);
+          setEditingBorrow(null);
+          refreshBorrows();
         })
         .catch((err) => console.error("Lỗi khi cập nhật phiếu mượn:", err));
     } else {
@@ -146,41 +138,52 @@ const BorrowManagement = () => {
       fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idDocGia: borrowData.readerId,
-          idSach: borrowData.bookId,
-          ngayMuon: borrowData.borrowDate,
-          hanTra: borrowData.returnDate,
-          ngayTra: borrowData.actualReturnDate || null,
-          trangThai: "borrowed",
-          ghiChu: borrowData.notes || "",
-        }),
+        body: JSON.stringify(requestData),
       })
-        .then((res) => res.json())
-        .then((newBorrow) => {
-          const newBorrowData = {
-            id: newBorrow.id,
-            readerId: newBorrow.idDocGia,
-            readerName: newBorrow.docGia.tenDocGia,
-            bookId: newBorrow.idSach,
-            bookTitle: newBorrow.sach.tenSach,
-            borrowDate: new Date(newBorrow.ngayMuon)
-              .toISOString()
-              .split("T")[0],
-            returnDate: new Date(newBorrow.hanTra).toISOString().split("T")[0],
-            actualReturnDate: newBorrow.ngayTra
-              ? new Date(newBorrow.ngayTra).toISOString().split("T")[0]
-              : null,
-            status: newBorrow.trangThai,
-            notes: newBorrow.ghiChu || "",
-          };
-          setBorrows([...borrows, newBorrowData]);
-          setFilteredBorrows([...filteredBorrows, newBorrowData]);
+        .then((res) => {
+          if (!res.ok) {
+            res
+              .text()
+              .then((text) => alert("Lỗi khi thêm phiếu mượn: " + text));
+            return;
+          }
+          return res.json();
+        })
+        .then(() => {
+          setShowModal(false);
+          setEditingBorrow(null);
+          refreshBorrows();
         })
         .catch((err) => console.error("Lỗi khi thêm phiếu mượn:", err));
     }
-    setShowModal(false);
-    setEditingBorrow(null);
+  };
+
+  const refreshBorrows = () => {
+    setLoading(true);
+    fetch(apiUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        const mappedBorrows = data.map(mapBorrowData);
+        setBorrows(mappedBorrows);
+        setFilteredBorrows(mappedBorrows);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi tải phiếu mượn:", err);
+        setLoading(false);
+      });
+  };
+
+  const handleDeleteBorrow = (borrowId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa phiếu mượn này?")) {
+      fetch(`${apiUrl}/${borrowId}`, {
+        method: "DELETE",
+      })
+        .then(() => {
+          refreshBorrows();
+        })
+        .catch((err) => console.error("Lỗi khi xóa phiếu mượn:", err));
+    }
   };
 
   const getStatusBadge = (status) => {
