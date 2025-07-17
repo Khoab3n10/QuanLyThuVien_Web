@@ -27,9 +27,9 @@ const BorrowManagement = () => {
         const mappedBorrows = data.map((borrow) => ({
           id: borrow.id,
           readerId: borrow.idDocGia,
-          readerName: borrow.docGia.tenDocGia,
+          readerName: borrow.tenDocGia,
           bookId: borrow.idSach,
-          bookTitle: borrow.sach.tenSach,
+          bookTitle: borrow.tenSach,
           borrowDate: new Date(borrow.ngayMuon).toISOString().split("T")[0],
           returnDate: new Date(borrow.hanTra).toISOString().split("T")[0],
           actualReturnDate: borrow.ngayTra

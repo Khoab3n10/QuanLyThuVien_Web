@@ -7,67 +7,73 @@ namespace LibraryApi.Data
     {
         public static void Initialize(LibraryContext context)
         {
-            if (context.Saches.Any() || context.DocGias.Any() || context.PhieuMuons.Any()) return;
+            if (!context.Saches.Any())
+            {
+                context.Saches.AddRange(
+                    new Sach
+                    {
+                        TenSach = "Đắc Nhân Tâm",
+                        TacGia = "Dale Carnegie",
+                        ISBN = "978-604-1-00001-1",
+                        TheLoai = "Kỹ năng sống",
+                        NhaXuatBan = "NXB Tổng hợp TP.HCM",
+                        NamXuatBan = 2019,
+                        SoLuong = 5,
+                        SoLuongCoSan = 3,
+                        ViTriLuuTru = "Kệ A1"
+                    },
+                    new Sach
+                    {
+                        TenSach = "Nhà Giả Kim",
+                        TacGia = "Paulo Coelho",
+                        ISBN = "978-604-1-00002-2",
+                        TheLoai = "Tiểu thuyết",
+                        NhaXuatBan = "NXB Văn học",
+                        NamXuatBan = 2020,
+                        SoLuong = 3,
+                        SoLuongCoSan = 1,
+                        ViTriLuuTru = "Kệ B2"
+                    },
+                    new Sach
+                    {
+                        TenSach = "Tuổi Trẻ Đáng Giá Bao Nhiêu",
+                        TacGia = "Rosie Nguyễn",
+                        ISBN = "978-604-1-00003-3",
+                        TheLoai = "Kỹ năng sống",
+                        NhaXuatBan = "NXB Hội nhà văn",
+                        NamXuatBan = 2018,
+                        SoLuong = 4,
+                        SoLuongCoSan = 2,
+                        ViTriLuuTru = "Kệ A3"
+                    }
+                );
+            }
+            else return;
 
-            context.Saches.AddRange(
-                new Sach
+            if (!context.DocGias.Any())
+            {
+                context.DocGias.AddRange(
+                new DocGia
                 {
-                    TenSach = "Đắc Nhân Tâm",
-                    TacGia = "Dale Carnegie",
-                    ISBN = "978-604-1-00001-1",
-                    TheLoai = "Kỹ năng sống",
-                    NhaXuatBan = "NXB Tổng hợp TP.HCM",
-                    NamXuatBan = 2019,
-                    SoLuong = 5,
-                    SoLuongCoSan = 3,
-                    ViTriLuuTru = "Kệ A1"
+                    HoTen = "Nguyễn Văn A",
+                    Email = "nguyenvana@email.com",
+                    SoDienThoai = "0123456789",
+                    DiaChi = "123 Lê Lợi, Q1",
+                    NgayDangKy = DateTime.Now.AddDays(-10),
+                    TrangThai = "Hoạt động",
+                    TongLuotMuon = 15,
+                    SachDangMuon = 2
                 },
-                new Sach
-                {
-                    TenSach = "Nhà Giả Kim",
-                    TacGia = "Paulo Coelho",
-                    ISBN = "978-604-1-00002-2",
-                    TheLoai = "Tiểu thuyết",
-                    NhaXuatBan = "NXB Văn học",
-                    NamXuatBan = 2020,
-                    SoLuong = 3,
-                    SoLuongCoSan = 1,
-                    ViTriLuuTru = "Kệ B2"
-                },
-                new Sach
-                {
-                    TenSach = "Tuổi Trẻ Đáng Giá Bao Nhiêu",
-                    TacGia = "Rosie Nguyễn",
-                    ISBN = "978-604-1-00003-3",
-                    TheLoai = "Kỹ năng sống",
-                    NhaXuatBan = "NXB Hội nhà văn",
-                    NamXuatBan = 2018,
-                    SoLuong = 4,
-                    SoLuongCoSan = 2,
-                    ViTriLuuTru = "Kệ A3"
-                }
-            );
-
-            context.DocGias.AddRange(
-                new DocGia { 
-                    HoTen = "Nguyễn Văn A", 
-                    Email = "nguyenvana@email.com", 
-                    SoDienThoai = "0123456789", 
-                    DiaChi = "123 Lê Lợi, Q1", 
-                    NgayDangKy = DateTime.Now.AddDays(-30), 
-                    TrangThai = "Hoạt động", 
-                    TongLuotMuon = 15, 
-                    SachDangMuon = 2 
-                },
-                new DocGia 
+                new DocGia
                 {
                     HoTen = "Trần Thị B",
                     Email = "tranthib@email.com",
-                    SoDienThoai = "0987654321", 
-                    DiaChi = "456 Nguyễn Trãi, Q5", 
+                    SoDienThoai = "0987654321",
+                    DiaChi = "456 Nguyễn Trãi, Q5",
                     NgayDangKy = DateTime.Now.AddDays(-10),
-                    TrangThai = "Hoạt động", TongLuotMuon = 8, 
-                    SachDangMuon = 0 
+                    TrangThai = "Hoạt động",
+                    TongLuotMuon = 8,
+                    SachDangMuon = 0
                 },
                 new DocGia
                 {
@@ -103,30 +109,35 @@ namespace LibraryApi.Data
                     SachDangMuon = 0
                 }
             );
+            }
+            else return;
 
-            context.PhieuMuons.AddRange(
-                new PhieuMuon
-                {
-                    TenDocGia = "Nguyễn Văn A",
-                    TenSach = "Đắc Nhân Tâm",
-                    NgayMuon = DateTime.Now.AddDays(-7),
-                    HanTra = DateTime.Now.AddDays(7),
-                    NgayTraThuc = null,
-                    TrangThai = "Đang mượn",
-                    GhiChu = "Mượn lần đầu"
-                },
-                new PhieuMuon
-                {
-                    TenDocGia = "Trần Thị B",
-                    TenSach = "Nhà Giả Kim",
-                    NgayMuon = DateTime.Now.AddDays(-15),
-                    HanTra = DateTime.Now.AddDays(-5),
-                    NgayTraThuc = DateTime.Now.AddDays(-3),
-                    TrangThai = "Đã trả",
-                    GhiChu = "Trả đúng hạn"
-                }
-            );
-
+            if (!context.PhieuMuons.Any())
+            {
+                context.PhieuMuons.AddRange(
+                    new PhieuMuon
+                    {
+                        TenDocGia = "Nguyễn Văn A",
+                        TenSach = "Đắc Nhân Tâm",
+                        NgayMuon = DateTime.Now.AddDays(-10),
+                        HanTra = DateTime.Now.AddDays(14),
+                        NgayTraThuc = null,
+                        TrangThai = "Đang mượn",
+                        GhiChu = "Mượn lần đầu"
+                    },
+                    new PhieuMuon
+                    {
+                        TenDocGia = "Trần Thị B",
+                        TenSach = "Nhà Giả Kim",
+                        NgayMuon = DateTime.Now.AddDays(-10),
+                        HanTra = DateTime.Now.AddDays(14),
+                        NgayTraThuc = DateTime.Now.AddDays(-3),
+                        TrangThai = "Đã trả",
+                        GhiChu = "Trả đúng hạn"
+                    }
+                );
+            }
+            else return;
             context.SaveChanges();
         }
     }
