@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaEdit, FaTrash } from 'react-icons/fa';
-import BookModal from '../components/BookModal';
-import './BookManagement.css';
+import React, { useState, useEffect } from "react";
+import { FaPlus, FaSearch, FaEdit, FaTrash } from "react-icons/fa";
+import BookModal from "../components/BookModal";
+import "./BookManagement.css";
 
 const BookManagement = () => {
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingBook, setEditingBook] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const apiUrl = 'https://libraryapi20250714182231-dvf7buahgwdmcmg7.southeastasia-01.azurewebsites.net/api/Sach';
+  const apiUrl =
+    "https://libraryapi20250714182231-dvf7buahgwdmcmg7.southeastasia-01.azurewebsites.net/api/Sach";
 
   // Tải dữ liệu sách từ API
   useEffect(() => {
     fetch(apiUrl)
-      .then(res => res.json())
-      .then(data => {
-        const mappedBooks = data.map(book => ({
+      .then((res) => res.json())
+      .then((data) => {
+        const mappedBooks = data.map((book) => ({
           id: book.id,
           title: book.tenSach,
           author: book.tacGia,
@@ -28,24 +29,25 @@ const BookManagement = () => {
           publishYear: book.namXuatBan,
           quantity: book.soLuong,
           available: book.soLuongCoLai,
-          location: book.viTriLuuTru
+          location: book.viTriLuuTru,
         }));
         setBooks(mappedBooks);
         setFilteredBooks(mappedBooks);
         setLoading(false);
       })
-      .catch(err => {
-        console.error('Lỗi khi tải sách:', err);
+      .catch((err) => {
+        console.error("Lỗi khi tải sách:", err);
         setLoading(false);
       });
   }, []);
 
   // Lọc sách khi tìm kiếm
   useEffect(() => {
-    const filtered = books.filter(book =>
-      (book.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (book.author?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (book.isbn || '').includes(searchTerm)
+    const filtered = books.filter(
+      (book) =>
+        (book.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (book.author?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (book.isbn || "").includes(searchTerm)
     );
     setFilteredBooks(filtered);
   }, [searchTerm, books]);
@@ -61,20 +63,31 @@ const BookManagement = () => {
   };
 
   const handleDeleteBook = (bookId) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa sách này?')) {
+    if (window.confirm("Bạn có chắc chắn muốn xóa sách này?")) {
       fetch(`${apiUrl}/${bookId}`, {
-        method: 'DELETE'
+        method: "DELETE",
       })
         .then(() => {
-          const updatedBooks = books.filter(book => book.id !== bookId);
+          const updatedBooks = books.filter((book) => book.id !== bookId);
           setBooks(updatedBooks);
           setFilteredBooks(updatedBooks);
         })
-        .catch(err => console.error('Lỗi khi xóa sách:', err));
+        .catch((err) => console.error("Lỗi khi xóa sách:", err));
     }
   };
 
+  const isValidIsbn = (isbn) => {
+    const cleaned = isbn.replace(/-/g, "").trim();
+    const regex = /^(978|979)\d{10}$/;
+    return regex.test(cleaned);
+  };
+
   const handleSaveBook = (bookData) => {
+    if (!isValidIsbn(bookData.isbn)) {
+      alert("Mã ISBN không hợp lệ. Vui lòng nhập đúng chuẩn Việt Nam.");
+      return;
+    }
+
     const requestData = {
       tenSach: bookData.title,
       tacGia: bookData.author,
@@ -84,26 +97,26 @@ const BookManagement = () => {
       namXuatBan: bookData.publishYear,
       soLuong: bookData.quantity,
       soLuongCoLai: bookData.available,
-      viTriLuuTru: bookData.location
+      viTriLuuTru: bookData.location,
     };
 
     if (editingBook) {
       // Cập nhật
       fetch(`${apiUrl}/${editingBook.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...requestData, id: editingBook.id })
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...requestData, id: editingBook.id }),
       })
-        .then(res => res.json())
+        .then((res) => res.json())
         .then(() => refreshBooks());
     } else {
       // Thêm mới
       fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestData)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
       })
-        .then(res => res.json())
+        .then((res) => res.json())
         .then(() => refreshBooks());
     }
 
@@ -113,9 +126,9 @@ const BookManagement = () => {
 
   const refreshBooks = () => {
     fetch(apiUrl)
-      .then(res => res.json())
-      .then(data => {
-        const mappedBooks = data.map(book => ({
+      .then((res) => res.json())
+      .then((data) => {
+        const mappedBooks = data.map((book) => ({
           id: book.id,
           title: book.tenSach,
           author: book.tacGia,
@@ -125,7 +138,7 @@ const BookManagement = () => {
           publishYear: book.namXuatBan,
           quantity: book.soLuong,
           available: book.soLuongCoLai,
-          location: book.viTriLuuTru
+          location: book.viTriLuuTru,
         }));
         setBooks(mappedBooks);
         setFilteredBooks(mappedBooks);
@@ -133,8 +146,10 @@ const BookManagement = () => {
   };
 
   const getStatusBadge = (available, quantity) => {
-    if (available === 0) return <span className="badge badge-danger">Hết sách</span>;
-    if (available < quantity) return <span className="badge badge-warning">Còn ít</span>;
+    if (available === 0)
+      return <span className="badge badge-danger">Hết sách</span>;
+    if (available < quantity)
+      return <span className="badge badge-warning">Còn ít</span>;
     return <span className="badge badge-success">Có sẵn</span>;
   };
 
@@ -189,11 +204,13 @@ const BookManagement = () => {
             <tbody>
               {filteredBooks.map((book) => (
                 <tr key={book.id}>
-                  <td>#{book.id.toString().padStart(4, '0')}</td>
+                  <td>#{book.id.toString().padStart(4, "0")}</td>
                   <td>
                     <div className="book-title-cell">
                       <strong>{book.title}</strong>
-                      <small>{book.publisher} - {book.publishYear}</small>
+                      <small>
+                        {book.publisher} - {book.publishYear}
+                      </small>
                     </div>
                   </td>
                   <td>{book.author}</td>
