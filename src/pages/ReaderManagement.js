@@ -11,6 +11,9 @@ const ReaderManagement = () => {
   const [editingReader, setEditingReader] = useState(null);
   const [loading, setLoading] = useState(true);
 
+const apiUrl =
+    "https://libraryapi20250714182231-dvf7buahgwdmcmg7.southeastasia-01.azurewebsites.net/api/DocGia";
+
   useEffect(() => {
     // Simulate loading data
     setTimeout(() => {

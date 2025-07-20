@@ -1,92 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
-import BookModal from '../components/BookModal';
-import './BookManagement.css';
+import React, { useState, useEffect } from "react";
+import { FaPlus, FaSearch, FaEdit, FaTrash } from "react-icons/fa";
+import BookModal from "../components/BookModal";
+import "./BookManagement.css";
 
 const BookManagement = () => {
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingBook, setEditingBook] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const apiUrl =
+    "https://libraryapi20250714182231-dvf7buahgwdmcmg7.southeastasia-01.azurewebsites.net/api/Sach";
+
+  // Tải dữ liệu sách từ API
   useEffect(() => {
-    // Simulate loading data
-    setTimeout(() => {
-      const mockBooks = [
-        {
-          id: 1,
-          title: 'Đắc Nhân Tâm',
-          author: 'Dale Carnegie',
-          isbn: '978-604-1-00001-1',
-          category: 'Kỹ năng sống',
-          publisher: 'NXB Tổng hợp TP.HCM',
-          publishYear: 2019,
-          quantity: 5,
-          available: 3,
-          location: 'Kệ A1'
-        },
-        {
-          id: 2,
-          title: 'Nhà Giả Kim',
-          author: 'Paulo Coelho',
-          isbn: '978-604-1-00002-2',
-          category: 'Tiểu thuyết',
-          publisher: 'NXB Văn học',
-          publishYear: 2020,
-          quantity: 3,
-          available: 1,
-          location: 'Kệ B2'
-        },
-        {
-          id: 3,
-          title: 'Tuổi Trẻ Đáng Giá Bao Nhiêu',
-          author: 'Rosie Nguyễn',
-          isbn: '978-604-1-00003-3',
-          category: 'Kỹ năng sống',
-          publisher: 'NXB Hội nhà văn',
-          publishYear: 2018,
-          quantity: 4,
-          available: 2,
-          location: 'Kệ A3'
-        },
-        {
-          id: 4,
-          title: 'Cách Nghĩ Để Thành Công',
-          author: 'Napoleon Hill',
-          isbn: '978-604-1-00004-4',
-          category: 'Kinh doanh',
-          publisher: 'NXB Lao động',
-          publishYear: 2021,
-          quantity: 6,
-          available: 4,
-          location: 'Kệ C1'
-        },
-        {
-          id: 5,
-          title: 'Đọc Vị Bất Kỳ Ai',
-          author: 'David J. Lieberman',
-          isbn: '978-604-1-00005-5',
-          category: 'Tâm lý học',
-          publisher: 'NXB Thế giới',
-          publishYear: 2020,
-          quantity: 2,
-          available: 0,
-          location: 'Kệ B3'
-        }
-      ];
-      setBooks(mockBooks);
-      setFilteredBooks(mockBooks);
-      setLoading(false);
-    }, 1000);
+    fetch(apiUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        const mappedBooks = data.map((book) => ({
+          id: book.id,
+          title: book.tenSach,
+          author: book.tacGia,
+          isbn: book.isbn,
+          category: book.theLoai,
+          publisher: book.nhaXuatBan,
+          publishYear: book.namXuatBan,
+          quantity: book.soLuong,
+          available: book.soLuongCoLai,
+          location: book.viTriLuuTru,
+        }));
+        setBooks(mappedBooks);
+        setFilteredBooks(mappedBooks);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi tải sách:", err);
+        setLoading(false);
+      });
   }, []);
 
+  // Lọc sách khi tìm kiếm
   useEffect(() => {
-    const filtered = books.filter(book =>
-      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.isbn.includes(searchTerm)
+    const filtered = books.filter(
+      (book) =>
+        (book.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (book.author?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (book.isbn || "").includes(searchTerm)
     );
     setFilteredBooks(filtered);
   }, [searchTerm, books]);
@@ -102,37 +63,94 @@ const BookManagement = () => {
   };
 
   const handleDeleteBook = (bookId) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa sách này?')) {
-      setBooks(books.filter(book => book.id !== bookId));
+    if (window.confirm("Bạn có chắc chắn muốn xóa sách này?")) {
+      fetch(`${apiUrl}/${bookId}`, {
+        method: "DELETE",
+      })
+        .then(() => {
+          const updatedBooks = books.filter((book) => book.id !== bookId);
+          setBooks(updatedBooks);
+          setFilteredBooks(updatedBooks);
+        })
+        .catch((err) => console.error("Lỗi khi xóa sách:", err));
     }
   };
 
+  const isValidIsbn = (isbn) => {
+    const cleaned = isbn.replace(/-/g, "").trim();
+    const regex = /^(978|979)\d{10}$/;
+    return regex.test(cleaned);
+  };
+
   const handleSaveBook = (bookData) => {
-    if (editingBook) {
-      // Update existing book
-      setBooks(books.map(book => 
-        book.id === editingBook.id ? { ...bookData, id: editingBook.id } : book
-      ));
-    } else {
-      // Add new book
-      const newBook = {
-        ...bookData,
-        id: Math.max(...books.map(b => b.id)) + 1
-      };
-      setBooks([...books, newBook]);
+    if (!isValidIsbn(bookData.isbn)) {
+      alert("Mã ISBN không hợp lệ. Vui lòng nhập đúng chuẩn Việt Nam.");
+      return;
     }
+
+    const requestData = {
+      tenSach: bookData.title,
+      tacGia: bookData.author,
+      isbn: bookData.isbn,
+      theLoai: bookData.category,
+      nhaXuatBan: bookData.publisher,
+      namXuatBan: bookData.publishYear,
+      soLuong: bookData.quantity,
+      soLuongCoLai: bookData.available,
+      viTriLuuTru: bookData.location,
+    };
+
+    if (editingBook) {
+      // Cập nhật
+      fetch(`${apiUrl}/${editingBook.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...requestData, id: editingBook.id }),
+      })
+        .then((res) => res.json())
+        .then(() => refreshBooks());
+    } else {
+      // Thêm mới
+      fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      })
+        .then((res) => res.json())
+        .then(() => refreshBooks());
+    }
+
     setShowModal(false);
     setEditingBook(null);
   };
 
+  const refreshBooks = () => {
+    fetch(apiUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        const mappedBooks = data.map((book) => ({
+          id: book.id,
+          title: book.tenSach,
+          author: book.tacGia,
+          isbn: book.isbn,
+          category: book.theLoai,
+          publisher: book.nhaXuatBan,
+          publishYear: book.namXuatBan,
+          quantity: book.soLuong,
+          available: book.soLuongCoLai,
+          location: book.viTriLuuTru,
+        }));
+        setBooks(mappedBooks);
+        setFilteredBooks(mappedBooks);
+      });
+  };
+
   const getStatusBadge = (available, quantity) => {
-    if (available === 0) {
+    if (available === 0)
       return <span className="badge badge-danger">Hết sách</span>;
-    } else if (available < quantity) {
+    if (available < quantity)
       return <span className="badge badge-warning">Còn ít</span>;
-    } else {
-      return <span className="badge badge-success">Có sẵn</span>;
-    }
+    return <span className="badge badge-success">Có sẵn</span>;
   };
 
   if (loading) {
@@ -186,11 +204,13 @@ const BookManagement = () => {
             <tbody>
               {filteredBooks.map((book) => (
                 <tr key={book.id}>
-                  <td>#{book.id.toString().padStart(4, '0')}</td>
+                  <td>#{book.id.toString().padStart(4, "0")}</td>
                   <td>
                     <div className="book-title-cell">
                       <strong>{book.title}</strong>
-                      <small>{book.publisher} - {book.publishYear}</small>
+                      <small>
+                        {book.publisher} - {book.publishYear}
+                      </small>
                     </div>
                   </td>
                   <td>{book.author}</td>
@@ -246,4 +266,4 @@ const BookManagement = () => {
   );
 };
 
-export default BookManagement; 
+export default BookManagement;
