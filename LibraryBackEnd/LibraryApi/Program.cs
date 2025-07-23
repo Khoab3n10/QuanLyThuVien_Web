@@ -26,8 +26,7 @@ app.UseCors("AllowAll");
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<LibraryContext>();
-    context.Database.Migrate(); 
-    SeedData.Initialize(context); 
+    context.Database.Migrate();  
 }
 
 if (app.Environment.IsDevelopment())

@@ -22,6 +22,49 @@ namespace LibraryApi.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("LibraryApi.Models.ChiTietPhieuMuon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("GhiChu")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("NgayHenTra")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("NgayMuon")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("NgayTra")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("PhiPhat")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PhieuMuonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SachId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PhieuMuonId");
+
+                    b.HasIndex("SachId");
+
+                    b.ToTable("ChiTietPhieuMuons");
+                });
+
             modelBuilder.Entity("LibraryApi.Models.DocGia", b =>
                 {
                     b.Property<int>("Id")
@@ -72,11 +115,14 @@ namespace LibraryApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("DocGiaId")
+                        .HasColumnType("int");
+
                     b.Property<string>("GhiChu")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("HanTra")
+                    b.Property<DateTime>("NgayHenTra")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("NgayMuon")
@@ -85,13 +131,36 @@ namespace LibraryApi.Migrations
                     b.Property<DateTime?>("NgayTraThuc")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("TenDocGia")
+                    b.Property<string>("TrangThai")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TenSach")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocGiaId");
+
+                    b.ToTable("PhieuMuons");
+                });
+
+            modelBuilder.Entity("LibraryApi.Models.Reservation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DocGiaId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayDat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("NgayHetHan")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SachId")
+                        .HasColumnType("int");
 
                     b.Property<string>("TrangThai")
                         .IsRequired()
@@ -99,7 +168,11 @@ namespace LibraryApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PhieuMuons");
+                    b.HasIndex("DocGiaId");
+
+                    b.HasIndex("SachId");
+
+                    b.ToTable("Reservations");
                 });
 
             modelBuilder.Entity("LibraryApi.Models.Sach", b =>
@@ -146,6 +219,131 @@ namespace LibraryApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Saches");
+                });
+
+            modelBuilder.Entity("LibraryApi.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DocGiaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocGiaId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("LibraryApi.Models.ChiTietPhieuMuon", b =>
+                {
+                    b.HasOne("LibraryApi.Models.PhieuMuon", "PhieuMuon")
+                        .WithMany("ChiTietPhieuMuons")
+                        .HasForeignKey("PhieuMuonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LibraryApi.Models.Sach", "Sach")
+                        .WithMany("ChiTietPhieuMuons")
+                        .HasForeignKey("SachId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PhieuMuon");
+
+                    b.Navigation("Sach");
+                });
+
+            modelBuilder.Entity("LibraryApi.Models.PhieuMuon", b =>
+                {
+                    b.HasOne("LibraryApi.Models.DocGia", "DocGia")
+                        .WithMany("PhieuMuons")
+                        .HasForeignKey("DocGiaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DocGia");
+                });
+
+            modelBuilder.Entity("LibraryApi.Models.Reservation", b =>
+                {
+                    b.HasOne("LibraryApi.Models.DocGia", "DocGia")
+                        .WithMany()
+                        .HasForeignKey("DocGiaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LibraryApi.Models.Sach", "Sach")
+                        .WithMany()
+                        .HasForeignKey("SachId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DocGia");
+
+                    b.Navigation("Sach");
+                });
+
+            modelBuilder.Entity("LibraryApi.Models.User", b =>
+                {
+                    b.HasOne("LibraryApi.Models.DocGia", "DocGia")
+                        .WithMany()
+                        .HasForeignKey("DocGiaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("DocGia");
+                });
+
+            modelBuilder.Entity("LibraryApi.Models.DocGia", b =>
+                {
+                    b.Navigation("PhieuMuons");
+                });
+
+            modelBuilder.Entity("LibraryApi.Models.PhieuMuon", b =>
+                {
+                    b.Navigation("ChiTietPhieuMuons");
+                });
+
+            modelBuilder.Entity("LibraryApi.Models.Sach", b =>
+                {
+                    b.Navigation("ChiTietPhieuMuons");
                 });
 #pragma warning restore 612, 618
         }

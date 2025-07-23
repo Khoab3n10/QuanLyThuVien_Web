@@ -1,4 +1,7 @@
-﻿namespace LibraryApi.Models
+﻿using System;
+using System.Collections.Generic;
+
+namespace LibraryApi.Models
 {
     public class DocGia
     {
@@ -13,5 +16,7 @@
         // Thống kê
         public int TongLuotMuon { get; set; }
         public int SachDangMuon { get; set; }
+
+        public ICollection<PhieuMuon> PhieuMuons { get; set; }
     }
 }

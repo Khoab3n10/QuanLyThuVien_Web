@@ -111,33 +111,6 @@ namespace LibraryApi.Data
             );
             }
             else return;
-
-            if (!context.PhieuMuons.Any())
-            {
-                context.PhieuMuons.AddRange(
-                    new PhieuMuon
-                    {
-                        TenDocGia = "Nguyễn Văn A",
-                        TenSach = "Đắc Nhân Tâm",
-                        NgayMuon = DateTime.Now.AddDays(-10),
-                        HanTra = DateTime.Now.AddDays(14),
-                        NgayTraThuc = null,
-                        TrangThai = "Đang mượn",
-                        GhiChu = "Mượn lần đầu"
-                    },
-                    new PhieuMuon
-                    {
-                        TenDocGia = "Trần Thị B",
-                        TenSach = "Nhà Giả Kim",
-                        NgayMuon = DateTime.Now.AddDays(-10),
-                        HanTra = DateTime.Now.AddDays(14),
-                        NgayTraThuc = DateTime.Now.AddDays(-3),
-                        TrangThai = "Đã trả",
-                        GhiChu = "Trả đúng hạn"
-                    }
-                );
-            }
-            else return;
             context.SaveChanges();
         }
     }

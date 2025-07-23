@@ -12,5 +12,7 @@
         public int SoLuong { get; set; }                // Tổng số lượng
         public int SoLuongCoSan { get; set; }           // Số lượng có sẵn
         public string ViTriLuuTru { get; set; }         // Vị trí lưu trữ
+
+        public ICollection<ChiTietPhieuMuon> ChiTietPhieuMuons { get; set; }
     }
 }
