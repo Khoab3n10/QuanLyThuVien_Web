@@ -22,7 +22,7 @@
   gap: 0.75rem;
   font-size: 1.5rem;
   font-weight: 700;
-  margin: 0 0 1rem 0;
+  margin: 0;
 }
 
 .sidebar-icon {
@@ -105,6 +105,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .user-avatar {
@@ -123,15 +124,36 @@
 }
 
 .user-name {
+  margin: 0 0 0.25rem 0;
   font-weight: 600;
   font-size: 0.875rem;
-  margin: 0 0 0.25rem 0;
 }
 
 .user-role {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.7);
   margin: 0;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
 /* Responsive design */
@@ -148,6 +170,10 @@
   
   .sidebar-title {
     font-size: 1.25rem;
+  }
+  
+  .sidebar-nav {
+    padding: 1rem 0;
   }
   
   .nav-link {

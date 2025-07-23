@@ -9,48 +9,66 @@ import {
   FaUser,
   FaSearch,
   FaHistory,
-  FaSignInAlt
+  FaSignOutAlt,
+  FaCog
 } from 'react-icons/fa';
 import './Sidebar.css';
 
-const Sidebar = () => {
-  const adminMenuItems = [
-    { path: '/', icon: <FaHome />, label: 'Dashboard' },
-    { path: '/books', icon: <FaBook />, label: 'Quản lý sách' },
-    { path: '/readers', icon: <FaUsers />, label: 'Quản lý độc giả' },
-    { path: '/borrows', icon: <FaExchangeAlt />, label: 'Quản lý mượn trả' },
-  ];
+const Sidebar = ({ user, onLogout }) => {
+  const getMenuItems = () => {
+    switch (user.role) {
+      case 'Quản trị viên':
+        return [
+          { path: '/', icon: <FaHome />, label: 'Dashboard' },
+          { path: '/books', icon: <FaBook />, label: 'Quản lý sách' },
+          { path: '/readers', icon: <FaUsers />, label: 'Quản lý độc giả' },
+          { path: '/borrows', icon: <FaExchangeAlt />, label: 'Quản lý mượn trả' },
+          { path: '/users', icon: <FaUser />, label: 'Quản lý người dùng' },
+        ];
+      case 'Thủ thư':
+        return [
+          { path: '/', icon: <FaHome />, label: 'Dashboard' },
+          { path: '/books', icon: <FaBook />, label: 'Quản lý sách' },
+          { path: '/readers', icon: <FaUsers />, label: 'Quản lý độc giả' },
+          { path: '/borrows', icon: <FaExchangeAlt />, label: 'Quản lý mượn trả' },
+        ];
+      case 'Kế toán':
+        return [
+          { path: '/', icon: <FaHome />, label: 'Dashboard' },
+          { path: '/borrows', icon: <FaExchangeAlt />, label: 'Quản lý mượn trả' },
+        ];
+      case 'Độc giả':
+        return [
+          { path: '/reader', icon: <FaHome />, label: 'Trang chủ' },
+          { path: '/reader/search', icon: <FaSearch />, label: 'Tìm kiếm sách' },
+          { path: '/reader/my-books', icon: <FaBook />, label: 'Sách của tôi' },
+          { path: '/reader/history', icon: <FaHistory />, label: 'Lịch sử mượn' },
+          { path: '/reader/profile', icon: <FaUser />, label: 'Thông tin cá nhân' },
+        ];
+      default:
+        return [];
+    }
+  };
 
-  const readerMenuItems = [
-    { path: '/reader', icon: <FaHome />, label: 'Trang chủ' },
-    { path: '/reader/search', icon: <FaSearch />, label: 'Tìm kiếm sách' },
-    { path: '/reader/my-books', icon: <FaBook />, label: 'Sách của tôi' },
-    { path: '/reader/history', icon: <FaHistory />, label: 'Lịch sử mượn' },
-    { path: '/reader/profile', icon: <FaUser />, label: 'Thông tin cá nhân' },
-  ];
+  const getRoleDisplayName = (role) => {
+    const roleNames = {
+      'Quản trị viên': 'Administrator',
+      'Thủ thư': 'Librarian',
+      'Kế toán': 'Accountant',
+      'Độc giả': 'Reader'
+    };
+    return roleNames[role] || role;
+  };
 
-  // Check if current path is reader section
-  const isReaderSection = window.location.pathname.startsWith('/reader');
-
-  const menuItems = isReaderSection ? readerMenuItems : adminMenuItems;
+  const menuItems = getMenuItems();
 
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <h1 className="sidebar-title">
           <FaChartBar className="sidebar-icon" />
-          {isReaderSection ? 'Thư Viện' : 'Quản Lý Thư Viện'}
+          Quản Lý Thư Viện
         </h1>
-        {isReaderSection && (
-          <div className="reader-switch">
-            <button 
-              className="btn btn-secondary btn-sm"
-              onClick={() => window.location.href = '/'}
-            >
-              <FaSignInAlt /> Chuyển sang Admin
-            </button>
-          </div>
-        )}
       </div>
       
       <nav className="sidebar-nav">
@@ -74,17 +92,17 @@ const Sidebar = () => {
       <div className="sidebar-footer">
         <div className="user-info">
           <div className="user-avatar">
-            {isReaderSection ? <FaUser /> : <FaUsers />}
+            <FaUser />
           </div>
           <div className="user-details">
-            <p className="user-name">
-              {isReaderSection ? 'Độc giả' : 'Quản lý thư viện'}
-            </p>
-            <p className="user-role">
-              {isReaderSection ? 'Member' : 'Administrator'}
-            </p>
+            <p className="user-name">{user.username}</p>
+            <p className="user-role">{getRoleDisplayName(user.role)}</p>
           </div>
         </div>
+        <button className="logout-btn" onClick={onLogout}>
+          <FaSignOutAlt />
+          <span>Đăng xuất</span>
+        </button>
       </div>
     </aside>
   );
