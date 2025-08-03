@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { MOCK_DATA } from "../config/api";
+import readerService from "../services/readerService";
 import {
   FaHome,
   FaBook,
@@ -58,6 +60,7 @@ const ModernSidebar = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -66,6 +69,80 @@ const ModernSidebar = ({
       "(prefers-color-scheme: dark)"
     ).matches;
     setIsDarkMode(prefersDark);
+
+    // Load current user data
+    const loadCurrentUser = async () => {
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      console.log('Sidebar - Current user:', userData);
+      console.log('Sidebar - DocGia ID:', userData.docGiaId);
+      
+      if (userData.username) {
+        // For readers, try to get real data from DocGia API
+        if (userData.role === 'Reader') {
+          try {
+            if (userData.docGiaId) {
+              console.log('📡 Sidebar fetching reader data from DocGia API by ID...');
+              const readerData = await readerService.getReaderById(userData.docGiaId);
+              console.log('✅ Sidebar DocGia API response by ID:', readerData);
+              
+              setCurrentUser({
+                name: readerData.name,
+                email: readerData.email,
+                role: userData.role,
+                username: userData.username
+              });
+              return;
+            } else if (userData.username) {
+              // If no docGiaId, try to get reader by username through User table
+              console.log('📡 Sidebar fetching reader data through User->DocGia link by username...');
+              const readerData = await readerService.getReaderByUsername(userData.username);
+              console.log('✅ Sidebar DocGia API response by username:', readerData);
+              
+              setCurrentUser({
+                name: readerData.name,
+                email: readerData.email,
+                role: userData.role,
+                username: userData.username
+              });
+              return;
+            }
+          } catch (error) {
+            console.log('❌ Sidebar DocGia API failed:', error.message);
+            console.log('🔄 Sidebar falling back to mock data...');
+          }
+          
+          // Fallback to mock data for readers
+          if (MOCK_DATA.readerProfiles[userData.username]) {
+            const readerProfile = MOCK_DATA.readerProfiles[userData.username];
+            setCurrentUser({
+              name: readerProfile.name,
+              email: readerProfile.email,
+              role: userData.role,
+              username: userData.username
+            });
+            return;
+          }
+        }
+        
+        // For non-readers, use display name mapping or username
+        const displayNames = {
+          admin: 'Administrator',
+          librarian: 'Thủ thư',
+          accountant: 'Kế toán', 
+          warehouse: 'Nhân viên kho',
+          reader: 'Độc giả'
+        };
+        
+        setCurrentUser({
+          name: displayNames[userData.username] || userData.username,
+          email: userData.email,
+          role: userData.role,
+          username: userData.username
+        });
+      }
+    };
+
+    loadCurrentUser();
 
     // Mock notifications
     setNotifications([
@@ -516,7 +593,9 @@ const ModernSidebar = ({
           </div>
           {!isCollapsed && (
             <div className="user-info">
-              <div className="user-name">Nguyễn Văn A</div>
+              <div className="user-name">
+                {currentUser ? currentUser.name : 'Loading...'}
+              </div>
               <div className="user-role">{userRole}</div>
             </div>
           )}

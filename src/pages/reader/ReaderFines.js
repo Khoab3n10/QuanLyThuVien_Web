@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaCreditCard, FaMoneyBillWave, FaExclamationTriangle, FaCheck, FaClock, FaHistory } from 'react-icons/fa';
+import { MOCK_DATA } from '../../config/api';
 import './ReaderFines.css';
 
 const ReaderFines = () => {
@@ -8,46 +9,24 @@ const ReaderFines = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setFines([
-        {
-          id: 1,
-          bookTitle: 'Đắc Nhân Tâm',
-          dueDate: '2024-01-10',
-          returnDate: '2024-01-15',
-          daysLate: 5,
-          amount: 25000,
-          reason: 'Trả sách trễ',
-          status: 'pending',
-          fineType: 'late_return'
-        },
-        {
-          id: 2,
-          bookTitle: 'Nhà Giả Kim',
-          dueDate: '2024-01-05',
-          returnDate: '2024-01-08',
-          daysLate: 3,
-          amount: 15000,
-          reason: 'Trả sách trễ',
-          status: 'paid',
-          fineType: 'late_return',
-          paidDate: '2024-01-08'
-        },
-        {
-          id: 3,
-          bookTitle: 'Tuổi Trẻ Đáng Giá Bao Nhiêu',
-          dueDate: '2024-01-12',
-          returnDate: '2024-01-14',
-          daysLate: 2,
-          amount: 50000,
-          reason: 'Sách bị hư hỏng',
-          status: 'pending',
-          fineType: 'damage'
-        }
-      ]);
+    // Get current user data from localStorage
+    const loadUserFines = () => {
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      console.log('ReaderFines - Current user:', currentUser);
+      
+      // Get fines for current user
+      const userFines = currentUser.username && MOCK_DATA.readerFines[currentUser.username]
+        ? MOCK_DATA.readerFines[currentUser.username]
+        : [];
+      
+      console.log('User fines:', userFines);
+      
+      setFines(userFines);
       setLoading(false);
-    }, 1000);
+    };
+
+    // Simulate loading delay
+    setTimeout(loadUserFines, 600);
   }, []);
 
   const handlePayFine = (fineId) => {

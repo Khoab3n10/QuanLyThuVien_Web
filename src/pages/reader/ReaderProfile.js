@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendar, FaEdit, FaSave, FaTimes, FaBook } from 'react-icons/fa';
+import { MOCK_DATA } from '../../config/api';
+import readerService from '../../services/readerService';
 import './ReaderProfile.css';
 
 const ReaderProfile = () => {
@@ -9,26 +11,109 @@ const ReaderProfile = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading data
-    setTimeout(() => {
-      const mockProfile = {
-        id: 1,
-        name: 'Nguyễn Văn A',
-        email: 'nguyenvana@email.com',
-        phone: '0123456789',
-        address: '123 Đường ABC, Quận 1, TP.HCM',
-        memberSince: '2023-01-15',
-        memberId: 'R001',
-        status: 'active',
-        totalBorrows: 15,
-        currentBorrows: 2,
-        totalBooks: 12,
-        overdueBooks: 1
-      };
-      setProfile(mockProfile);
-      setEditForm(mockProfile);
+    // Get current user data from localStorage
+    const loadUserProfile = async () => {
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      console.log('🔍 ReaderProfile - Current user:', currentUser);
+      console.log('🔍 DocGia ID:', currentUser.docGiaId);
+      
+      try {
+        // Try to get reader info from DocGia API using docGiaId first
+        if (currentUser.docGiaId) {
+          console.log('📡 Fetching reader data from DocGia API by ID...');
+          const readerData = await readerService.getReaderById(currentUser.docGiaId);
+          console.log('✅ DocGia API response by ID:', readerData);
+          
+          // Map API data to profile format
+          const userProfile = {
+            id: readerData.id,
+            name: readerData.name,
+            email: readerData.email,
+            phone: readerData.phone,
+            address: readerData.address,
+            memberSince: readerData.registrationDate,
+            memberId: `R${String(readerData.id).padStart(3, '0')}`,
+            status: readerData.memberStatus || 'active',
+            totalBorrows: 0, // API doesn't provide this, would need separate call
+            currentBorrows: 0,
+            totalBooks: 0,
+            overdueBooks: 0
+          };
+          
+          console.log('📊 Mapped profile from API by ID:', userProfile);
+          setProfile(userProfile);
+          setEditForm(userProfile);
+          setLoading(false);
+          return;
+        }
+        
+        // If no docGiaId, try to get reader by username through User table
+        if (currentUser.username) {
+          console.log('📡 Fetching reader data through User->DocGia link by username...');
+          const readerData = await readerService.getReaderByUsername(currentUser.username);
+          console.log('✅ DocGia API response by username:', readerData);
+          
+          // Map API data to profile format
+          const userProfile = {
+            id: readerData.id,
+            name: readerData.name,
+            email: readerData.email,
+            phone: readerData.phone,
+            address: readerData.address,
+            memberSince: readerData.registrationDate,
+            memberId: `R${String(readerData.id).padStart(3, '0')}`,
+            status: readerData.memberStatus || 'active',
+            totalBorrows: 0,
+            currentBorrows: 0,
+            totalBooks: 0,
+            overdueBooks: 0
+          };
+          
+          console.log('📊 Mapped profile from API by username:', userProfile);
+          setProfile(userProfile);
+          setEditForm(userProfile);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.log('❌ DocGia API failed:', error.message);
+        console.log('🔄 Falling back to mock data...');
+      }
+      
+      // Fallback: Use mock data when API fails or no docGiaId
+      console.log('🔍 Available profiles:', Object.keys(MOCK_DATA.readerProfiles));
+      
+      let userProfile = null;
+      if (currentUser.username && MOCK_DATA.readerProfiles[currentUser.username]) {
+        userProfile = MOCK_DATA.readerProfiles[currentUser.username];
+        console.log('✅ Found mock profile for:', currentUser.username);
+      } else {
+        console.log('❌ No mock profile found for username:', currentUser.username);
+        console.log('🔄 Using default fallback profile');
+        // Fallback to default reader profile
+        userProfile = MOCK_DATA.readerProfiles['reader'] || {
+          id: currentUser.userId || 1,
+          name: currentUser.username || 'Unknown User',
+          email: currentUser.email || 'unknown@library.com',
+          phone: '0123456789',
+          address: 'Chưa cập nhật địa chỉ',
+          memberSince: '2023-01-15',
+          memberId: `R${String(currentUser.userId || 1).padStart(3, '0')}`,
+          status: 'active',
+          totalBorrows: 0,
+          currentBorrows: 0,
+          totalBooks: 0,
+          overdueBooks: 0
+        };
+      }
+      
+      console.log('📊 Final fallback profile:', userProfile);
+      setProfile(userProfile);
+      setEditForm(userProfile);
       setLoading(false);
-    }, 1000);
+    };
+
+    loadUserProfile();
   }, []);
 
   const handleEdit = () => {

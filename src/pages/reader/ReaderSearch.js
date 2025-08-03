@@ -400,9 +400,9 @@ const ReaderSearch = () => {
     try {
       setReserving((prev) => ({ ...prev, [bookId]: true }));
 
-      // Lấy thông tin Reader từ context hoặc localStorage
-          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const docGiaId = currentUser.docGiaId || currentUser.maDG || 1; // Use docGiaId from backend
+      // Lấy thông tin Reader từ localStorage
+      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const docGiaId = currentUser.docGiaId || currentUser.userId;
 
       // Kiểm tra sách có sẵn không
       const book = books.find((b) => b.id === bookId);
@@ -453,7 +453,7 @@ const ReaderSearch = () => {
   const checkBorrowConditions = async (bookId) => {
     try {
           const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const docGiaId = currentUser.docGiaId || currentUser.maDG || 1;
+    const docGiaId = currentUser.docGiaId || currentUser.userId;
 
       const result = await reservationService.checkBorrowConditions(
         docGiaId,
@@ -470,7 +470,7 @@ const ReaderSearch = () => {
   const getQueueInfo = async (bookId) => {
     try {
           const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const docGiaId = currentUser.docGiaId || currentUser.maDG || 1;
+    const docGiaId = currentUser.docGiaId || currentUser.userId;
 
       const result = await reservationService.getQueueInfo(bookId, docGiaId);
       return result;

@@ -31,7 +31,7 @@ const ReaderReservations = () => {
     try {
       setLoading(true);
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const docGiaId = currentUser.docGiaId || currentUser.maDG || 1;
+  const docGiaId = currentUser.docGiaId || currentUser.userId;
 
       // Load đặt trước
       const reservationsData = await reservationService.getMyReservations(docGiaId);
@@ -53,7 +53,7 @@ const ReaderReservations = () => {
       setCancelling(prev => ({ ...prev, [reservationId]: true }));
       
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const docGiaId = currentUser.docGiaId || currentUser.maDG || 1;
+  const docGiaId = currentUser.docGiaId || currentUser.userId;
 
       const result = await reservationService.cancelReservation(reservationId, docGiaId);
       showToast(result.message, 'success');
@@ -69,12 +69,20 @@ const ReaderReservations = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
+      case 'Chờ phê duyệt':
+        return <span className="badge badge-warning">⏳ Chờ phê duyệt</span>;
+      case 'Đã phê duyệt':
+        return <span className="badge badge-success">✅ Đã phê duyệt</span>;
+      case 'Từ chối':
+        return <span className="badge badge-danger">❌ Từ chối</span>;
       case 'Đang chờ':
-        return <span className="badge badge-warning">Đang chờ</span>;
+        return <span className="badge badge-info">⏱️ Đang chờ</span>;
       case 'Đã xử lý':
-        return <span className="badge badge-success">Đã xử lý</span>;
+        return <span className="badge badge-success">✅ Đã xử lý</span>;
+      case 'Đã thông báo':
+        return <span className="badge badge-primary">📢 Đã thông báo</span>;
       case 'Quá hạn':
-        return <span className="badge badge-danger">Quá hạn</span>;
+        return <span className="badge badge-danger">⚠️ Quá hạn</span>;
       default:
         return <span className="badge badge-secondary">{status}</span>;
     }

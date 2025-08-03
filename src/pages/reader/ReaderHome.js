@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaBook, FaClock, FaCheck, FaExclamationTriangle, FaSearch, FaUser, FaCalendar, FaMapMarkerAlt, FaInbox } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { MOCK_DATA } from '../../config/api';
+import readerService from '../../services/readerService';
 import './ReaderHome.css';
 
 const ReaderHome = () => {
@@ -10,43 +12,100 @@ const ReaderHome = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading data
-    setTimeout(() => {
+    // Get current user data from localStorage
+    const loadUserData = async () => {
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      console.log('🏠 ReaderHome - Current user:', currentUser);
+      console.log('🏠 DocGia ID:', currentUser.docGiaId);
+      
+      let userProfile = null;
+      
+      try {
+        // Try to get reader info from DocGia API using docGiaId first
+        if (currentUser.docGiaId) {
+          console.log('📡 Fetching reader data from DocGia API for home by ID...');
+          const readerData = await readerService.getReaderById(currentUser.docGiaId);
+          console.log('✅ DocGia API response for home by ID:', readerData);
+          
+          // Map API data to profile format
+          userProfile = {
+            id: readerData.id,
+            name: readerData.name,
+            email: readerData.email,
+            memberSince: readerData.registrationDate,
+            totalBorrows: 0, // API doesn't provide this, would need separate call
+            currentBorrows: 0,
+            overdueBooks: 0
+          };
+          
+          console.log('📊 Mapped home profile from API by ID:', userProfile);
+        } else if (currentUser.username) {
+          // If no docGiaId, try to get reader by username through User table
+          console.log('📡 Fetching reader data for home through User->DocGia link by username...');
+          const readerData = await readerService.getReaderByUsername(currentUser.username);
+          console.log('✅ DocGia API response for home by username:', readerData);
+          
+          // Map API data to profile format
+          userProfile = {
+            id: readerData.id,
+            name: readerData.name,
+            email: readerData.email,
+            memberSince: readerData.registrationDate,
+            totalBorrows: 0,
+            currentBorrows: 0,
+            overdueBooks: 0
+          };
+          
+          console.log('📊 Mapped home profile from API by username:', userProfile);
+        }
+      } catch (error) {
+        console.log('❌ DocGia API failed for home:', error.message);
+        console.log('🔄 Falling back to mock data for home...');
+      }
+      
+      // Fallback: Use mock data when API fails or no docGiaId
+      if (!userProfile) {
+        console.log('🏠 Available profiles:', Object.keys(MOCK_DATA.readerProfiles));
+        
+        if (currentUser.username && MOCK_DATA.readerProfiles[currentUser.username]) {
+          userProfile = MOCK_DATA.readerProfiles[currentUser.username];
+          console.log('✅ Found mock profile for home:', currentUser.username);
+        } else {
+          console.log('❌ No mock profile found for username in home:', currentUser.username);
+          console.log('🔄 Using default fallback profile for home');
+          // Fallback to default reader profile
+          userProfile = MOCK_DATA.readerProfiles['reader'] || {
+            id: currentUser.userId || 1,
+            name: currentUser.username || 'Unknown User',
+            email: currentUser.email || 'unknown@library.com',
+            totalBorrows: 0,
+            currentBorrows: 0,
+            overdueBooks: 0,
+            memberSince: '2023-01-15'
+          };
+        }
+      }
+      
+      console.log('🏠 Final home profile:', userProfile);
+      
       setReaderInfo({
-        id: 1,
-        name: 'Nguyễn Văn A',
-        email: 'nguyenvana@email.com',
-        memberSince: '2023-01-15',
-        totalBorrows: 15,
-        currentBorrows: 2,
-        overdueBooks: 0,
+        id: userProfile.id,
+        name: userProfile.name,
+        email: userProfile.email,
+        memberSince: userProfile.memberSince,
+        totalBorrows: userProfile.totalBorrows,
+        currentBorrows: userProfile.currentBorrows,
+        overdueBooks: userProfile.overdueBooks,
         fines: 0
       });
 
-      setCurrentBorrows([
-        {
-          id: 1,
-          bookTitle: 'Đắc Nhân Tâm',
-          author: 'Dale Carnegie',
-          borrowDate: '2024-01-15',
-          returnDate: '2024-02-15',
-          daysLeft: 5,
-          status: 'borrowed',
-          category: 'Kỹ năng sống',
-          location: 'Kệ A1'
-        },
-        {
-          id: 2,
-          bookTitle: 'Nhà Giả Kim',
-          author: 'Paulo Coelho',
-          borrowDate: '2024-01-20',
-          returnDate: '2024-02-20',
-          daysLeft: 10,
-          status: 'borrowed',
-          category: 'Tiểu thuyết',
-          location: 'Kệ B2'
-        }
-      ]);
+      // Get user-specific borrowed books for dashboard preview
+      const userBorrowedBooks = currentUser.username && MOCK_DATA.readerBorrowedBooks[currentUser.username]
+        ? MOCK_DATA.readerBorrowedBooks[currentUser.username].slice(0, 2) // Show only first 2 books
+        : [];
+      
+      console.log('🏠 User borrowed books for home:', userBorrowedBooks);
+      setCurrentBorrows(userBorrowedBooks);
 
       setRecentBooks([
         {
@@ -79,7 +138,9 @@ const ReaderHome = () => {
       ]);
 
       setLoading(false);
-    }, 1000);
+    };
+
+    loadUserData();
   }, []);
 
   const getStatusBadge = (status, daysLeft) => {

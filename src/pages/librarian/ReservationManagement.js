@@ -33,6 +33,12 @@ const ReservationManagement = () => {
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+  
+  // States for approval workflow
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [approvalAction, setApprovalAction] = useState(''); // 'approve' or 'reject'
+  const [approvalNote, setApprovalNote] = useState('');
+  const [rejectReason, setRejectReason] = useState('');
 
   const { showToast } = useToast();
 
@@ -148,6 +154,66 @@ const ReservationManagement = () => {
   // Làm mới dữ liệu
   const handleRefresh = () => {
     loadReservations();
+  };
+
+  // ========== APPROVAL WORKFLOW HANDLERS ==========
+  
+  // Mở modal phê duyệt
+  const handleApprove = (reservation) => {
+    setSelectedReservation(reservation);
+    setApprovalAction('approve');
+    setApprovalNote('');
+    setShowApprovalModal(true);
+  };
+
+  // Mở modal từ chối  
+  const handleReject = (reservation) => {
+    setSelectedReservation(reservation);
+    setApprovalAction('reject');
+    setRejectReason('');
+    setShowApprovalModal(true);
+  };
+
+  // Xử lý phê duyệt
+  const handleConfirmApproval = async () => {
+    if (!selectedReservation) return;
+    
+    try {
+      setUpdatingStatus(true);
+      let result;
+      
+      if (approvalAction === 'approve') {
+        result = await reservationService.approveReservation(selectedReservation.id, approvalNote);
+        showToast("✅ Đã phê duyệt yêu cầu thành công!", "success");
+      } else if (approvalAction === 'reject') {
+        if (!rejectReason.trim()) {
+          showToast("Vui lòng nhập lý do từ chối", "error");
+          return;
+        }
+        result = await reservationService.rejectReservation(selectedReservation.id, rejectReason);
+        showToast("❌ Đã từ chối yêu cầu", "info");
+      }
+      
+      // Đóng modal và refresh data
+      setShowApprovalModal(false);
+      setSelectedReservation(null);
+      setApprovalNote('');
+      setRejectReason('');
+      await loadReservations();
+      
+    } catch (error) {
+      showToast(error.message, "error");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  // Đóng modal phê duyệt
+  const handleCloseApprovalModal = () => {
+    setShowApprovalModal(false);
+    setSelectedReservation(null);
+    setApprovalNote('');
+    setRejectReason('');
   };
 
   // Load dữ liệu khi component mount
@@ -293,24 +359,48 @@ const ReservationManagement = () => {
                         : "-"}
                     </td>
                     <td>
-                      <div className="status-checkboxes">
-                        {[
-                          {
-                            key: "pending",
-                            label: "Chờ xử lý",
-                            value: "Đang chờ",
-                          },
-                          {
-                            key: "notified",
-                            label: "Đã thông báo",
-                            value: "Đã thông báo",
-                          },
-                          {
-                            key: "cancelled",
-                            label: "Đã hủy",
-                            value: "Đã hủy",
-                          },
-                        ].map((option) => (
+                      <div className="status-display">
+                        <Badge
+                          variant={
+                            reservation.trangThai === "Chờ phê duyệt"
+                              ? "warning"
+                              : reservation.trangThai === "Đã phê duyệt"
+                              ? "success"
+                              : reservation.trangThai === "Từ chối"
+                              ? "danger"
+                              : reservation.trangThai === "Đang chờ"
+                              ? "info"
+                              : reservation.trangThai === "Đã thông báo"
+                              ? "primary"
+                              : reservation.trangThai === "Đã nhận"
+                              ? "success"
+                              : "secondary"
+                          }
+                        >
+                          {reservation.trangThai || "Không xác định"}
+                        </Badge>
+                      </div>
+                      
+                      {/* Status checkboxes cho các trạng thái có thể chuyển đổi thủ công */}
+                      {!['Chờ phê duyệt', 'Đã phê duyệt', 'Từ chối'].includes(reservation.trangThai) && (
+                        <div className="status-checkboxes">
+                          {[
+                            {
+                              key: "pending",
+                              label: "Chờ xử lý",
+                              value: "Đang chờ",
+                            },
+                            {
+                              key: "notified",
+                              label: "Đã thông báo",
+                              value: "Đã thông báo",
+                            },
+                            {
+                              key: "cancelled",
+                              label: "Đã hủy",
+                              value: "Đã hủy",
+                            },
+                          ].map((option) => (
                           <label key={option.key} className="status-checkbox">
                             <input
                               type="checkbox"
@@ -324,8 +414,9 @@ const ReservationManagement = () => {
                               {option.label}
                             </span>
                           </label>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      )}
                     </td>
                     <td>
                       <div className="action-buttons">
@@ -336,6 +427,28 @@ const ReservationManagement = () => {
                           onClick={() => handleViewReservation(reservation)}
                           title="Xem chi tiết"
                         />
+                        
+                        {/* Hiển thị nút Approve/Reject chỉ cho trạng thái "Chờ phê duyệt" */}
+                        {reservation.trangThai === 'Chờ phê duyệt' && (
+                          <>
+                            <Button
+                              variant="success"
+                              size="sm"
+                              icon={<FaCheck />}
+                              onClick={() => handleApprove(reservation)}
+                              title="Phê duyệt yêu cầu"
+                              disabled={updatingStatus}
+                            />
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              icon={<FaTimes />}
+                              onClick={() => handleReject(reservation)}
+                              title="Từ chối yêu cầu"
+                              disabled={updatingStatus}
+                            />
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -467,6 +580,99 @@ const ReservationManagement = () => {
             <div className="modal-actions">
               <Button variant="secondary" onClick={handleCloseModal}>
                 Đóng
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal Phê duyệt/Từ chối */}
+      <Modal
+        isOpen={showApprovalModal}
+        title={
+          approvalAction === 'approve' 
+            ? "✅ Phê duyệt yêu cầu đặt mượn" 
+            : "❌ Từ chối yêu cầu đặt mượn"
+        }
+        onClose={handleCloseApprovalModal}
+        size="md"
+      >
+        {selectedReservation && (
+          <div className="approval-modal-content">
+            <div className="approval-info">
+              <h4>Thông tin yêu cầu</h4>
+              <div className="info-grid">
+                <div className="info-item">
+                  <span className="info-label">Độc giả:</span>
+                  <span className="info-value">{selectedReservation.docGia?.hoTen}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Mã thành viên:</span>
+                  <span className="info-value">{selectedReservation.docGia?.maDG}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Sách:</span>
+                  <span className="info-value">{selectedReservation.sach?.tenSach}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Tác giả:</span>
+                  <span className="info-value">{selectedReservation.sach?.tacGia}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Ngày yêu cầu:</span>
+                  <span className="info-value">
+                    {selectedReservation.ngayDat
+                      ? new Date(selectedReservation.ngayDat).toLocaleString("vi-VN")
+                      : "-"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="approval-form">
+              {approvalAction === 'approve' ? (
+                <div className="form-group">
+                  <label htmlFor="approval-note">Ghi chú phê duyệt (tùy chọn):</label>
+                  <textarea
+                    id="approval-note"
+                    rows="3"
+                    value={approvalNote}
+                    onChange={(e) => setApprovalNote(e.target.value)}
+                    placeholder="Ghi chú cho độc giả (vd: Vui lòng đến nhận sách trước 17:00)"
+                    className="form-textarea"
+                  />
+                </div>
+              ) : (
+                <div className="form-group">
+                  <label htmlFor="reject-reason">Lý do từ chối *:</label>
+                  <textarea
+                    id="reject-reason"
+                    rows="3"
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    placeholder="Nhập lý do từ chối (bắt buộc)"
+                    className="form-textarea"
+                    required
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="approval-actions">
+              <Button
+                variant="secondary"
+                onClick={handleCloseApprovalModal}
+                disabled={updatingStatus}
+              >
+                Hủy
+              </Button>
+              <Button
+                variant={approvalAction === 'approve' ? 'success' : 'danger'}
+                onClick={handleConfirmApproval}
+                loading={updatingStatus}
+                disabled={approvalAction === 'reject' && !rejectReason.trim()}
+              >
+                {approvalAction === 'approve' ? '✅ Phê duyệt' : '❌ Từ chối'}
               </Button>
             </div>
           </div>

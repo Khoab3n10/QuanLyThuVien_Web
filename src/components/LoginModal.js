@@ -111,12 +111,15 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
 
         const mockUser = MOCK_DATA.users[formData.username];
         if (mockUser && formData.password === "admin123") {
+          // Get specific reader profile if it's a reader
+          const readerProfile = mockUser.role === "Reader" ? MOCK_DATA.readerProfiles[formData.username] : null;
+          
           const userData = {
-            userId: Math.floor(Math.random() * 1000), // ✅ Mock user ID
+            userId: readerProfile ? readerProfile.id : Math.floor(Math.random() * 1000),
             username: mockUser.username,
             role: mockUser.role,
             email: mockUser.email,
-            docGiaId: mockUser.role === "Reader" ? Math.floor(Math.random() * 1000) : null, // ✅ Mock DocGia ID for readers
+            docGiaId: readerProfile ? readerProfile.id : (mockUser.role === "Reader" ? Math.floor(Math.random() * 1000) : null),
           };
 
           localStorage.setItem("token", "mock_token_" + Date.now());
