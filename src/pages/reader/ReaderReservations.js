@@ -30,8 +30,8 @@ const ReaderReservations = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const docGiaId = currentUser.maDG || 1;
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const docGiaId = currentUser.docGiaId || currentUser.maDG || 1;
 
       // Load đặt trước
       const reservationsData = await reservationService.getMyReservations(docGiaId);
@@ -52,8 +52,8 @@ const ReaderReservations = () => {
     try {
       setCancelling(prev => ({ ...prev, [reservationId]: true }));
       
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const docGiaId = currentUser.maDG || 1;
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const docGiaId = currentUser.docGiaId || currentUser.maDG || 1;
 
       const result = await reservationService.cancelReservation(reservationId, docGiaId);
       showToast(result.message, 'success');

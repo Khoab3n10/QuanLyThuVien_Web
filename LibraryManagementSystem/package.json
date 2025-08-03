@@ -1,0 +1,30 @@
+{
+  "name": "library-management-system",
+  "version": "1.0.0",
+  "description": "A modern library management system built with ASP.NET Core and React",
+  "scripts": {
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd LibraryApi; dotnet run",
+    "start:frontend": "cd library-frontend; npm start",
+    "build": "npm run build:backend; npm run build:frontend",
+    "build:backend": "cd LibraryApi; dotnet build",
+    "build:frontend": "cd library-frontend; npm run build",
+    "install:frontend": "cd library-frontend; npm install",
+    "clean": "npm run clean:backend; npm run clean:frontend",
+    "clean:backend": "cd LibraryApi; dotnet clean",
+    "clean:frontend": "cd library-frontend; npm run build -- --delete-output-dir"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  },
+  "keywords": [
+    "library",
+    "management",
+    "aspnet-core",
+    "react",
+    "typescript",
+    "entity-framework"
+  ],
+  "author": "Library Management Team",
+  "license": "MIT"
+} 

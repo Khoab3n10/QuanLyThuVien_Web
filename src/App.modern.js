@@ -209,13 +209,66 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState("light");
 
-  // Initialize app
+  // Initialize app with real authentication
   useEffect(() => {
-    // Simulate loading and authentication
-    setTimeout(() => {
-      setUser(mockUser);
-      setLoading(false);
-    }, 1000);
+    const initializeApp = async () => {
+      try {
+        // Check authentication with enhanced validation  
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('user');
+        
+        if (token && userData) {
+          try {
+            const parsedUser = JSON.parse(userData);
+            
+            // ✅ Validate user data structure
+            if (parsedUser.userId && parsedUser.username && parsedUser.role) {
+              
+              // ✅ Validate token-user consistency  
+              try {
+                const tokenData = JSON.parse(atob(token.split(".")[1]));
+                const tokenUserId = tokenData['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+                
+                if (tokenUserId && tokenUserId.toString() === parsedUser.userId.toString()) {
+                  console.log('✅ Modern App Authentication validated');
+                  setUser(parsedUser);
+                } else {
+                  console.error('🚨 Modern App Authentication mismatch');
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('user');
+                  setUser(null);
+                }
+              } catch (tokenError) {
+                console.error('Modern App Token validation error:', tokenError);
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                setUser(null);
+              }
+            } else {
+              console.error('🚨 Modern App Invalid user data');
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              setUser(null);
+            }
+          } catch (parseError) {
+            console.error('Modern App Error parsing user data:', parseError);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setUser(null);
+          }
+        } else {
+          console.log('Modern App No authentication data found');
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Modern App Initialization error:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeApp();
 
     // Initialize theme
     const savedTheme = localStorage.getItem("theme") || "light";

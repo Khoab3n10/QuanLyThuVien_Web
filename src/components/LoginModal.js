@@ -42,9 +42,11 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
       console.log("Original role from backend:", mappedRole);
 
       const userData = {
+        userId: data.userId,           // ✅ ADD USER ID
         username: data.username,
         role: mappedRole,
         email: data.email,
+        docGiaId: data.docGiaId,      // ✅ ADD DocGia ID for readers
       };
 
       // Store token and user data
@@ -54,6 +56,8 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
       console.log("=== Stored Data ===");
       console.log("Token stored:", !!data.token);
       console.log("User data stored:", userData);
+      console.log("User ID:", userData.userId);
+      console.log("DocGia ID:", userData.docGiaId);
 
       onLogin(userData);
       onClose();
@@ -108,9 +112,11 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
         const mockUser = MOCK_DATA.users[formData.username];
         if (mockUser && formData.password === "admin123") {
           const userData = {
+            userId: Math.floor(Math.random() * 1000), // ✅ Mock user ID
             username: mockUser.username,
             role: mockUser.role,
             email: mockUser.email,
+            docGiaId: mockUser.role === "Reader" ? Math.floor(Math.random() * 1000) : null, // ✅ Mock DocGia ID for readers
           };
 
           localStorage.setItem("token", "mock_token_" + Date.now());

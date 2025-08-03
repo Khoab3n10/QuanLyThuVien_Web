@@ -34,8 +34,10 @@ namespace LibraryApi.Controllers
             // Return the role as is since seed data already uses Vietnamese names
             return Ok(new { 
                 token, 
+                userId = user.MaND,          // ✅ ADD USER ID
                 username = user.TenDangNhap, 
-                role = user.ChucVu
+                role = user.ChucVu,
+                docGiaId = user.DocGiaId     // ✅ ADD DocGia ID if applicable
             });
         }
 

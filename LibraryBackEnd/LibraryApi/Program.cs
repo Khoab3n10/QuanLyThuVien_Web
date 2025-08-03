@@ -12,17 +12,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add DbContext - Use SQLite in development, SQL Server in production
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddDbContext<LibraryContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-}
-else
-{
-    builder.Services.AddDbContext<LibraryContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-}
+// Add DbContext - Use SQLite for now (Azure SQL Database works but Entity Framework has connection issues)
+Console.WriteLine("Using SQLite temporarily (Azure SQL Database connection will be fixed later)...");
+builder.Services.AddDbContext<LibraryContext>(options =>
+    options.UseSqlite("Data Source=Library.db"));
 
 // Add JWT Service
 builder.Services.AddScoped<JwtService>();
@@ -47,9 +40,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
             ValidateIssuer = false,
             ValidateAudience = false,
-            ValidateLifetime = false
+            ValidateLifetime = true,  // Enable token expiry validation
+            ClockSkew = TimeSpan.Zero
         };
     });
+
+// Add Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdmin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("RequireLibrarian", policy => policy.RequireRole("Librarian")); 
+    options.AddPolicy("RequireReader", policy => policy.RequireRole("Reader"));
+    options.AddPolicy("RequireAccountant", policy => policy.RequireRole("Accountant"));
+    options.AddPolicy("RequireWarehouse", policy => policy.RequireRole("Warehouse", "Nhân viên kho sách", "Trưởng kho"));
+    options.AddPolicy("RequireManager", policy => policy.RequireRole("Trưởng thư viện"));
+    options.AddPolicy("RequireDirector", policy => policy.RequireRole("Director"));
+});
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -83,6 +89,7 @@ app.MapControllers();
                 
                 // Ensure database is created and migrations are applied
                 context.Database.EnsureCreated();
+                Console.WriteLine("SQLite Database connection successful!");
                 
                 // Seed data if database is empty
                 if (!context.NguoiDungs.Any())

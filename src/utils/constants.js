@@ -22,14 +22,24 @@ export const API_ENDPOINTS = {
 
   // Book Management
   BOOKS: {
-    LIST: "/api/Books",
-    CREATE: "/api/Books",
-    UPDATE: "/api/Books/{id}",
-    DELETE: "/api/Books/{id}",
-    SEARCH: "/api/Books/search",
+    LIST: "/api/Sach",
+    CREATE: "/api/Sach",
+    UPDATE: "/api/Sach/{id}",
+    DELETE: "/api/Sach/{id}",
+    SEARCH: "/api/Sach/search",
   },
 
-  // Reader Management
+  // Reader/DocGia Management  
+  DOCGIA: {
+    LIST: "/api/DocGia",
+    CREATE: "/api/DocGia",
+    UPDATE: "/api/DocGia/{id}",
+    DELETE: "/api/DocGia/{id}",
+    REGISTER_MEMBERSHIP: "/api/DocGia/RegisterMembership",
+    CONFIRM_MEMBERSHIP: "/api/DocGia/ConfirmMembership",
+  },
+
+  // Reader Management (Different system)
   READERS: {
     LIST: "/api/Readers",
     CREATE: "/api/Readers",

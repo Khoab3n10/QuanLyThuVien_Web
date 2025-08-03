@@ -65,13 +65,19 @@ function App() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    // ✅ Use auth utility for enhanced validation
+    const currentUser = getCurrentUser();
     
-    if (token && userData) {
-      setUser(JSON.parse(userData));
+    if (currentUser) {
+      console.log('✅ Authentication validated successfully');
+      console.log('User ID:', currentUser.userId);
+      console.log('Username:', currentUser.username);
+      console.log('Role:', currentUser.role);
+      setUser(currentUser);
+    } else {
+      console.log('No valid authentication found');
     }
+    
     setLoading(false);
   }, []);
 

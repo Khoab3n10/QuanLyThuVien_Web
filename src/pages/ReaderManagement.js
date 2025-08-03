@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import { apiRequest } from "../config/api";
 import ReaderModal from "../components/ReaderModal";
+import PaymentModal from "../components/PaymentModal";
 import "./ReaderManagement.css";
 import { render } from "@testing-library/react";
 
@@ -23,6 +24,8 @@ const ReaderManagement = () => {
   const [editingReader, setEditingReader] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedReaderForPayment, setSelectedReaderForPayment] = useState(null);
 
   useEffect(() => {
     loadReaders();
@@ -165,19 +168,68 @@ const ReaderManagement = () => {
     }
   };
 
+  // Map frontend package values to backend expected values
+  const mapPackageTypeToBackend = (frontendValue) => {
+    const mapping = {
+      'thuong': 'Thuong',
+      'vip': 'VIP',
+      'sinhvien': 'HocSinh'
+    };
+    return mapping[frontendValue] || 'Thuong'; // Default to 'Thuong'
+  };
+
+  // Payment related functions
+  const handlePaymentConfirmation = (reader) => {
+    setSelectedReaderForPayment(reader);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = (response) => {
+    // Reload readers to update status
+    loadReaders();
+    setShowPaymentModal(false);
+    setSelectedReaderForPayment(null);
+  };
+
+  const getMemberStatusDisplay = (status) => {
+    const statusMap = {
+      'ChuaThanhToan': { text: 'Chưa thanh toán', class: 'status-unpaid' },
+      'ChoXacNhan': { text: 'Chờ xác nhận', class: 'status-pending' },
+      'DaThanhToan': { text: 'Đã thanh toán', class: 'status-paid' }
+    };
+    return statusMap[status] || { text: status, class: 'status-unknown' };
+  };
+
   const handleSaveReader = async (readerData) => {
     try {
       const requestData = {
-        HoTen: readerData.name,
-        TenDG: readerData.TenDG,
+        HoTen: readerData.hoTen,        
+        // TenDG removed - backend DTO doesn't expect this field
         Email: readerData.email,
-        SDT: readerData.phone,
-        DiaChi: readerData.address,
+        SDT: readerData.sdt,            
+        DiaChi: readerData.diaChi,      
         GioiTinh: readerData.gioiTinh,
         NgaySinh: readerData.ngaySinh || null,
-        LoaiDocGia: readerData.goiDangKy,
+        LoaiDocGia: mapPackageTypeToBackend(readerData.goiDangKy),
         PhiThanhVien: readerData.phiThanhVien || 0,
       };
+
+      console.log("=== DEBUG: Reader Request Data ===");
+      console.log("Original readerData:", readerData);
+      console.log("Transformed requestData:", requestData);
+      console.log("Required fields check:");
+      console.log("- HoTen:", requestData.HoTen, requestData.HoTen ? "✅" : "❌ MISSING");
+      console.log("- Email:", requestData.Email, requestData.Email ? "✅" : "❌ MISSING");  
+      console.log("- SDT:", requestData.SDT, requestData.SDT ? "✅" : "❌ MISSING");
+      console.log("- DiaChi:", requestData.DiaChi, requestData.DiaChi ? "✅" : "❌ MISSING");
+      console.log("- GioiTinh:", requestData.GioiTinh, requestData.GioiTinh ? "✅" : "❌ MISSING");
+      console.log("- LoaiDocGia:", requestData.LoaiDocGia, requestData.LoaiDocGia ? "✅" : "❌ MISSING");
+      console.log("- LoaiDocGia mapping:", readerData.goiDangKy, "→", requestData.LoaiDocGia);
+      
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const isValidEmail = emailRegex.test(requestData.Email || '');
+      console.log("- Email format check:", requestData.Email, isValidEmail ? "✅ Valid" : "❌ Invalid format");
 
       if (editingReader) {
         // Cập nhật
@@ -333,7 +385,13 @@ const ReaderManagement = () => {
                   </td>
                   <td>{getPackageBadge(reader.goiDangKy)}</td>
                   <td>{reader.memberSince}</td>
-                  <td>{getStatusBadge(reader.status)}</td>
+                  <td>
+                    {getMemberStatusDisplay(reader.memberStatus) && (
+                      <span className={`status-badge ${getMemberStatusDisplay(reader.memberStatus).class}`}>
+                        {getMemberStatusDisplay(reader.memberStatus).text}
+                      </span>
+                    )}
+                  </td>
                   <td>
                     <div className="stats-info">
                       <div>Tổng: {reader.totalBorrows} lượt</div>
@@ -349,6 +407,18 @@ const ReaderManagement = () => {
                       >
                         <FaEdit />
                       </button>
+                      
+                      {/* Payment confirmation button - only show for unpaid members */}
+                      {reader.memberStatus === 'ChoXacNhan' && (
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => handlePaymentConfirmation(reader)}
+                          title="Xác nhận thanh toán"
+                        >
+                          💳
+                        </button>
+                      )}
+                      
                       <button
                         className="btn btn-danger btn-sm"
                         onClick={() => handleDeleteReader(reader.id)}
@@ -383,6 +453,17 @@ const ReaderManagement = () => {
           }}
         />
       )}
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => {
+          setShowPaymentModal(false);
+          setSelectedReaderForPayment(null);
+        }}
+        reader={selectedReaderForPayment}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 };

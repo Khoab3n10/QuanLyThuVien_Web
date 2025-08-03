@@ -136,8 +136,8 @@ const ReaderModal = ({ reader, onSave, onClose }) => {
         hoTen: formData.hoTen,
         tenDG: formData.tenDG,
         email: formData.email,
-        sdt: formData.soDienThoai,
-        diaChi: formData.diaChiLienHe,
+        sdt: formData.soDienThoai,        // Keep consistent field name
+        diaChi: formData.diaChiLienHe,    // Keep consistent field name  
         gioiTinh: formData.gioiTinh,
         ngaySinh: formData.ngaySinh,
         goiDangKy: formData.goiDangKy || "thuong",
@@ -147,19 +147,20 @@ const ReaderModal = ({ reader, onSave, onClose }) => {
 
 
         const result = await onSave(transformedData);
+        
+        // Hiển thị thông tin tài khoản nếu có
         if (result && result.accountInfo) {
-          alert(
-            `Tạo thành viên thành công!\n\nThông tin tài khoản:\nTên đăng nhập: ${result.accountInfo.username}\nMật khẩu: ${result.accountInfo.password}\n\nVui lòng lưu lại thông tin này để đăng nhập!`
-          );
+          const accountMessage = `🎉 Tạo thành viên thành công!\n\n📋 THÔNG TIN TÀI KHOẢN:\n👤 Tên đăng nhập: ${result.accountInfo.username}\n🔑 Mật khẩu: ${result.accountInfo.password}\n\n⚠️ VUI LÒNG LƯU LẠI THÔNG TIN NÀY!\n\n💳 Để kích hoạt gói đăng ký, vui lòng liên hệ thủ thư để thanh toán.`;
+          
+          // Use a more user-friendly way to display info
+          if (window.confirm(accountMessage + "\n\nBạn có muốn sao chép thông tin này không?")) {
+            // Copy to clipboard if supported
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(`Tên đăng nhập: ${result.accountInfo.username}\nMật khẩu: ${result.accountInfo.password}`);
+              alert("✅ Đã sao chép thông tin tài khoản!");
+            }
+          }
         }
-      
-
-      // Hiển thị thông tin tài khoản nếu có
-      if (result && result.accountInfo) {
-        alert(
-          `Tạo thành viên thành công!\n\nThông tin tài khoản:\nTên đăng nhập: ${result.accountInfo.username}\nMật khẩu: ${result.accountInfo.password}\n\nVui lòng lưu lại thông tin này để đăng nhập!`
-        );
-      }
 
       if (onClose) onClose();
     } catch (error) {

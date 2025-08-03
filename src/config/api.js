@@ -54,18 +54,54 @@ export const apiRequest = async (endpoint, options = {}) => {
     );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      let errorData = {};
+      try {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          errorData = await response.json();
+        } else {
+          const textResponse = await response.text();
+          console.log("Full server error response:", textResponse);
+          errorData = { message: `Server error: ${textResponse.substring(0, 200)}` };
+        }
+      } catch (parseError) {
+        console.warn("Failed to parse error response:", parseError);
+        errorData = { message: `HTTP error! status: ${response.status}` };
+      }
+      
       console.error("API Error Response:", errorData);
       throw new Error(
         errorData.message || `HTTP error! status: ${response.status}`
       );
     }
 
-    const data = await response.json();
+    // Handle successful response  
+    let data;
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        // If not JSON, return as text
+        data = await response.text();
+        console.warn("Response is not JSON:", data.substring(0, 100));
+      }
+    } catch (parseError) {
+      console.error("Failed to parse response as JSON:", parseError);
+      throw new Error("Failed to parse server response. Server may be down or returning invalid data.");
+    }
+    
     console.log("API Response data:", data);
     return data;
   } catch (error) {
     console.error("API Request Error:", error);
+    
+    // Handle network errors (backend down, connection issues)
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng hoặc liên hệ quản trị viên.');
+    }
+    
+    // Handle other errors
     throw error;
   }
 };
@@ -171,13 +207,26 @@ export const isAuthenticated = () => {
     return false;
   }
 
-  // Check if token is expired (basic check)
+  // Check if token is expired and validate user data consistency
   try {
     const tokenData = JSON.parse(atob(token.split(".")[1]));
     const currentTime = Date.now() / 1000;
 
     if (tokenData.exp < currentTime) {
       console.log("Token expired, clearing authentication");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      return false;
+    }
+
+    // ✅ NEW: Validate token-user data consistency for security
+    const userData = JSON.parse(user);
+    const tokenUserId = tokenData['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+    
+    if (tokenUserId && userData.userId && tokenUserId.toString() !== userData.userId.toString()) {
+      console.error("🚨 SECURITY: Token and user data mismatch!");
+      console.log("Token User ID:", tokenUserId);
+      console.log("Stored User ID:", userData.userId);
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       return false;

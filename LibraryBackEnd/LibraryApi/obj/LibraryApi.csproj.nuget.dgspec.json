@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\lepha\\Desktop\\CNPM-Project\\QuanLyThuVien_Web\\LibraryBackEnd\\LibraryApi\\LibraryApi.csproj": {}
+    "D:\\Project_\\QuanLyThuVien_Web\\LibraryBackEnd\\LibraryApi\\LibraryApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\lepha\\Desktop\\CNPM-Project\\QuanLyThuVien_Web\\LibraryBackEnd\\LibraryApi\\LibraryApi.csproj": {
+    "D:\\Project_\\QuanLyThuVien_Web\\LibraryBackEnd\\LibraryApi\\LibraryApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\lepha\\Desktop\\CNPM-Project\\QuanLyThuVien_Web\\LibraryBackEnd\\LibraryApi\\LibraryApi.csproj",
+        "projectUniqueName": "D:\\Project_\\QuanLyThuVien_Web\\LibraryBackEnd\\LibraryApi\\LibraryApi.csproj",
         "projectName": "LibraryApi",
-        "projectPath": "C:\\Users\\lepha\\Desktop\\CNPM-Project\\QuanLyThuVien_Web\\LibraryBackEnd\\LibraryApi\\LibraryApi.csproj",
-        "packagesPath": "C:\\Users\\lepha\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\lepha\\Desktop\\CNPM-Project\\QuanLyThuVien_Web\\LibraryBackEnd\\LibraryApi\\obj\\",
+        "projectPath": "D:\\Project_\\QuanLyThuVien_Web\\LibraryBackEnd\\LibraryApi\\LibraryApi.csproj",
+        "packagesPath": "C:\\Users\\Khoa\\.nuget\\packages\\",
+        "outputPath": "D:\\Project_\\QuanLyThuVien_Web\\LibraryBackEnd\\LibraryApi\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Work_Place\\SQLServer\\SQL_SDK\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\lepha\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Khoa\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,6 +26,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -104,7 +105,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

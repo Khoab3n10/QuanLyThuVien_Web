@@ -401,8 +401,8 @@ const ReaderSearch = () => {
       setReserving((prev) => ({ ...prev, [bookId]: true }));
 
       // Lấy thông tin Reader từ context hoặc localStorage
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const docGiaId = currentUser.maDG || 1; // Fallback cho demo
+          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const docGiaId = currentUser.docGiaId || currentUser.maDG || 1; // Use docGiaId from backend
 
       // Kiểm tra sách có sẵn không
       const book = books.find((b) => b.id === bookId);
@@ -452,8 +452,8 @@ const ReaderSearch = () => {
   // Kiểm tra điều kiện đặt mượn trước khi hiển thị nút
   const checkBorrowConditions = async (bookId) => {
     try {
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const docGiaId = currentUser.maDG || 1;
+          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const docGiaId = currentUser.docGiaId || currentUser.maDG || 1;
 
       const result = await reservationService.checkBorrowConditions(
         docGiaId,
@@ -469,8 +469,8 @@ const ReaderSearch = () => {
   // Lấy thông tin hàng đợi cho sách
   const getQueueInfo = async (bookId) => {
     try {
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const docGiaId = currentUser.maDG || 1;
+          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const docGiaId = currentUser.docGiaId || currentUser.maDG || 1;
 
       const result = await reservationService.getQueueInfo(bookId, docGiaId);
       return result;
