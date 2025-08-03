@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import ModernSidebar from './components/ModernSidebar';
 import LoginModal from './components/LoginModal';
 import AuthTest from './components/AuthTest';
+import { getCurrentUser } from './utils/auth';
 import ModernDashboard from './pages/ModernDashboard';
 import BookManagement from './pages/BookManagement';
 import ReaderManagement from './pages/ReaderManagement';
