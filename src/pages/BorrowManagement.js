@@ -321,7 +321,7 @@ const BorrowManagement = () => {
                       : ""
                   }
                 >
-                  <td>#{borrow.id.toString().padStart(4, "0")}</td>
+                  <td>#{borrow.id?.toString().padStart(4, "0")}</td>
                   <td>
                     <div className="borrow-reader">
                       <strong>{borrow.readerName}</strong>
